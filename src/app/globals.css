@@ -129,3 +129,10 @@
     @apply font-sans;
   }
 }
+/* Cores de gráficos (validadas com o validador do dataviz, modo escuro).
+   Série 1 = receitas / destaque; série 2 = despesas. */
+:root {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --viz-grid: oklch(1 0 0 / 8%);
+}

@@ -19,7 +19,7 @@ Next.js (App Router) + TypeScript · Tailwind CSS + shadcn/ui · Supabase (Postg
    ```bash
    npm install
    ```
-2. Crie um projeto no [Supabase](https://supabase.com) e rode a migration de `supabase/migrations/` no SQL Editor.
+2. Crie um projeto no [Supabase](https://supabase.com) e rode, **em ordem**, os arquivos de `supabase/migrations/` no SQL Editor.
 3. Copie `.env.example` para `.env.local` e preencha a URL e a publishable key do projeto.
 4. Ative o provedor Google em *Authentication → Providers* e cadastre `http://localhost:3000/auth/callback` nas URLs de redirecionamento.
 5. Libere seu e-mail para cadastro (o app aceita apenas e-mails da lista):
@@ -38,4 +38,9 @@ Abra <http://localhost:3000>.
 - Valores monetários sempre em **centavos** (inteiro).
 - Saldos são calculados, nunca armazenados.
 - Segurança de dados garantida por RLS no banco (todo registro tem `user_id`).
-- Esta versão do Next.js usa Cache Components: leitura de cookies e `searchParams` deve ficar dentro de `<Suspense>`.
+- Esta versão do Next.js usa Cache Components e Partial Prefetching. Regras que o dev server valida:
+  - Páginas que leem a hora atual, `searchParams` ou dados do usuário começam com `await connection()` (de `next/server`).
+  - Cada página do app tem um `loading.tsx` ao lado (carregamento instantâneo na navegação).
+  - Um `<Suspense>` só em layout compartilhado não basta para a navegação entre páginas.
+- Dinheiro, datas e o interpretador do chat são funções puras com testes (`npm test`).
+- Navegação no topo (sem menu lateral); o layout do app está em `src/app/(app)/layout.tsx`.

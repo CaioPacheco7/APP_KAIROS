@@ -46,10 +46,18 @@ Mesmo com 1 usuário, o banco nasce **multiusuário** (todo registro tem `user_i
 - Investimentos (acompanhamento simples de saldo/aportes)
 - Importação de extrato (CSV/OFX), fase posterior
 
+### Registro rápido (chat)
+- Escrever do jeito que fala ("hoje tomei um café na padaria R$ 50") e o sistema entende valor, data, tipo e categoria e salva
+- Também cria tarefas, lembretes e notas ("tarefa: …", "lembrar de … amanhã 9h", "anotar: …")
+- Cada registro pode ser desfeito; o histórico da conversa fica salvo
+- **Sem IA:** interpretador por regras (palavras-chave, valores, datas). Entende frases simples; não entende tudo. Pode ser trocado por IA no futuro
+
 ### Rotina
 - Tarefas (prioridade, prazo, projeto)
-- Calendário / compromissos
-- Hábitos (frequência, sequência/streak)
+- Lembretes (dia e hora)
+- Bloco de notas (com nota fixada)
+- Calendário / compromissos (depois)
+- Hábitos (frequência, sequência/streak) (depois)
 
 ### Objetivos
 - Metas financeiras (valor alvo + prazo) e pessoais (marco/prazo)
@@ -81,7 +89,9 @@ Mesmo com 1 usuário, o banco nasce **multiusuário** (todo registro tem `user_i
 | **Recorrências** | Gerar lançamentos futuros automaticamente | Transações |
 | **Orçamento** | Limite por categoria/mês e alertas | Categorias, Transações |
 | **Investimentos** | Posição e evolução (simples) | Contas |
-| **Tarefas** | Pendências com prazo e prioridade | — |
+| **Registro rápido** | Chat que transforma frases em transações, tarefas, lembretes e notas | Transações, Tarefas, Notas |
+| **Tarefas e lembretes** | Pendências com prazo/prioridade e avisos por dia/hora | — |
+| **Notas** | Bloco de notas livre | — |
 | **Calendário** | Visão temporal de tarefas, vencimentos e eventos | Tarefas, Transações |
 | **Hábitos** | Registro diário e sequência | — |
 | **Objetivos** | Metas e progresso | Contas, Transações, Tarefas |
@@ -282,11 +292,17 @@ docs/
 
 Princípio: **usar o app o mais cedo possível**. Cada fase termina com algo que você usa de verdade.
 
-### Fase 1 — Núcleo financeiro (MVP)
-- Auth (cadastro, login, recuperar senha) e onboarding enxuto
-- Contas, categorias, transações (receita, despesa, transferência)
-- Dashboard financeiro: saldo total, receitas × despesas do mês, gastos por categoria, evolução mensal
-- Lista de transações com filtros e busca
+### Fase 1 — Núcleo financeiro + registro rápido + rotina básica (v1, na `main`)
+
+> Decisão de 13/11/2026: o **chat de registro** e a **rotina básica** (tarefas, lembretes, notas) entram já na v1, junto do núcleo financeiro. Navegação no **topo** (sem menu lateral).
+
+- Login com Google e restrição de cadastro ao seu e-mail
+- Contas (com saldo inicial), categorias padrão, transações (receita, despesa, transferência)
+- Dashboard: saldo total, receitas × despesas do mês, gasto por categoria, evolução de 6 meses, últimas transações, "hoje na rotina"
+- Transações: lista por mês com filtros, criar, editar, excluir
+- Registrar (chat): despesas/receitas, tarefas, lembretes e notas por frase, com desfazer
+- Rotina: tarefas, lembretes e notas (criar, concluir, fixar, excluir)
+- **Ainda fora da v1:** gerenciar categorias (criar/editar), editar tarefas, notificações dos lembretes, calendário, hábitos, cartões
 
 **Critério de pronto:** você lança suas transações reais por 2 semanas sem voltar para a planilha.
 
@@ -300,9 +316,9 @@ Princípio: **usar o app o mais cedo possível**. Cada fase termina com algo que
 - Metas financeiras e pessoais, contribuições, previsão
 - Dashboard de metas
 
-### Fase 4 — Rotina
-- Tarefas, calendário (inclui vencimentos financeiros), hábitos
-- Bloco "hoje" no dashboard geral
+### Fase 4 — Rotina avançada
+- Calendário (inclui vencimentos financeiros), hábitos, notificações dos lembretes
+- Edição de tarefas, projetos
 
 ### Fase 5 — Relatórios e investimentos
 - Relatórios por período/categoria/conta, exportação CSV
