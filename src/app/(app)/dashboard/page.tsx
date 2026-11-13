@@ -1,8 +1,12 @@
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 async function UserEmail() {
+  // A leitura da sessão (JWT) usa a hora atual; precisa rodar a cada requisição,
+  // não na pré-renderização.
+  await connection();
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const email = data?.claims?.email as string | undefined;
