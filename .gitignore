@@ -37,6 +37,42 @@ yarn-error.log*
 # vercel
 .vercel
 
+# ---------------------------------------------------------------
+# KAIROS: nada disto pode ir para o GitHub
+# ---------------------------------------------------------------
+
+# chaves e credenciais
+*.key
+*.p12
+*.pfx
+*.crt
+secrets/
+# credencial OAuth baixada do Google Cloud
+client_secret*.json
+google-credentials*.json
+service-account*.json
+
+# supabase local (CLI guarda ref do projeto e dados temporários)
+supabase/.temp/
+supabase/.branches/
+supabase/.env*
+supabase/config.toml.bak
+
+# dados financeiros pessoais: extratos, exports, backups do banco
+*.ofx
+*.qfx
+# se precisar de um CSV de teste, use git add -f
+*.csv
+*.dump
+*.sql.gz
+*.sql.bak
+/dados-pessoais/
+/importacoes/
+/backups/
+
+# configuração local de ferramentas
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
