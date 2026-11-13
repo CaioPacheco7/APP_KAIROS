@@ -113,6 +113,18 @@ export async function completeInterviewAction(
       revalidatePath("/", "layout");
       return { status: "success" };
     }
+
+    // O motivo real fica no log do servidor (o usuário só vê a mensagem amigável).
+    console.error("[entrevista] complete_interview falhou:", error.code, error.message);
+
+    // PGRST202 / 42883: a função não existe, ou seja, a migration não foi rodada.
+    if (error.code === "PGRST202" || error.code === "42883") {
+      return {
+        status: "error",
+        message:
+          "O banco ainda não tem a migration da entrevista. Rode as migrations de supabase/migrations/ no SQL Editor do Supabase, em ordem, e tente de novo.",
+      };
+    }
     return { status: "error", message: "Não foi possível concluir a entrevista. Tente de novo." };
   }
 
