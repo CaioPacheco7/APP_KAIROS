@@ -184,7 +184,7 @@ const INCOME_WORDS = [
 /** [categoria, palavras-chave]. A ordem importa: a primeira que casar vence. */
 const EXPENSE_CATEGORIES: Array<[string, string[]]> = [
   ["Assinaturas", ["netflix", "spotify", "assinatura", "prime", "youtube", "icloud", "disney", "hbo", "deezer"]],
-  ["Mercado", ["mercado", "supermercado", "feira", "acougue", "hortifruti", "atacadao", "sacolao", "padaria do mercado"]],
+  ["Mercado", ["mercado", "supermercado", "feira", "acougue", "hortifruti", "atacadao", "sacolao", "padaria do mercado", "alimentacao", "comida", "rancho"]],
   ["Alimentação fora", ["padaria", "cafe", "cafezinho", "lanche", "restaurante", "almoco", "almocei", "jantar", "jantei", "pizza", "hamburguer", "ifood", "sorvete", "bar", "cerveja", "churrasco", "salgado", "marmita", "pastel", "acai"]],
   ["Transporte", ["uber", "99", "onibus", "gasolina", "combustivel", "estacionamento", "pedagio", "metro", "taxi", "passagem", "alcool", "etanol", "diesel", "cabify"]],
   ["Moradia", ["aluguel", "condominio", "iptu", "reforma", "moveis"]],
@@ -193,6 +193,7 @@ const EXPENSE_CATEGORIES: Array<[string, string[]]> = [
   ["Educação", ["curso", "faculdade", "livro", "escola", "mensalidade", "apostila"]],
   ["Lazer", ["cinema", "show", "viagem", "jogo", "festa", "balada", "parque", "ingresso", "hotel", "passeio"]],
   ["Compras", ["roupa", "tenis", "sapato", "shopping", "amazon", "mercado livre", "shein", "presente", "camisa", "calca"]],
+  ["Outras despesas", ["consorcio", "financiamento", "emprestimo", "parcela", "parcelas", "cartao", "fatura"]],
 ];
 
 const INCOME_CATEGORIES: Array<[string, string[]]> = [
@@ -219,6 +220,14 @@ function detectCategory(
     if (words.some((w) => hasWord(normalized, w))) return category;
   }
   return type === "income" ? "Outras receitas" : null;
+}
+
+/** Sugere a categoria para um texto livre (ex.: nome de uma conta fixa). */
+export function categoryHintFor(
+  text: string,
+  type: "income" | "expense",
+): string | null {
+  return detectCategory(norm(text), type);
 }
 
 // ---------------------------------------------------------------------

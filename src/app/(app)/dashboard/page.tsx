@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import Link from "next/link";
 import { CategoryBars } from "@/components/charts/category-bars";
 import { MonthlyChart, type MonthlyPoint } from "@/components/charts/monthly-chart";
+import { HealthCard } from "@/components/health/health-card";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
+import { getMonthSnapshot } from "@/server/health";
 import {
   getAccounts,
   getBalances,
@@ -50,6 +52,9 @@ export default async function DashboardPage({
   const month = parseMonth(sp.mes, today.slice(0, 7));
   const months = lastMonths(month, 6);
   const { start } = monthBounds(month);
+
+  // Gera as contas fixas do mês (se faltarem) ANTES de ler os totais abaixo.
+  const snapshot = await getMonthSnapshot(month, today);
 
   const db = await createClient();
   const [accounts, balances, categoryNames, summaryRes, spendingRes, recentRes, tasksRes] =
@@ -139,6 +144,8 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
       )}
+
+      <HealthCard health={snapshot.health} />
 
       {/* Número principal + resumo do mês */}
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">

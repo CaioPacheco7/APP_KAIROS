@@ -66,3 +66,23 @@ export const TRANSACTION_TYPE_LABEL: Record<TransactionType, string> = {
   expense: "Despesa",
   transfer: "Transferência",
 };
+
+export type Recurrence = {
+  id: string;
+  kind: "income" | "expense";
+  description: string;
+  amount: number;
+  day_of_month: number;
+  account_id: string;
+  category_id: string | null;
+  starts_on: string;
+  active: boolean;
+};
+
+export type Profile = {
+  id: string;
+  name: string | null;
+  onboarded_at: string | null;
+  health_green_max: number;
+  health_yellow_max: number;
+};
