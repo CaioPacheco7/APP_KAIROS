@@ -1,42 +1,27 @@
-import { connection } from "next/server";
-import { CheckIcon, PinIcon, PinOffIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
+import { connection } from "next/server";
+import { HabitComposer } from "@/components/routine/habit-composer";
+import { HabitRow } from "@/components/routine/habit-row";
+import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
 import { TaskComposer } from "@/components/routine/task-composer";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { formatDayMonth, formatTimeBR } from "@/lib/dates";
+import { TaskItem, type TaskRow } from "@/components/routine/task-item";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatLongDate } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { getHabitBoard, summarizeToday } from "@/server/habits-board";
 import { getFormOptions } from "@/server/queries";
-import {
-  deleteNoteAction,
-  deleteTaskAction,
-  toggleNotePinAction,
-  toggleTaskAction,
-} from "@/server/routine";
 
 export const metadata = { title: "Rotina · KAIROS" };
 
 const TABS = [
+  { id: "hoje", label: "Hoje" },
   { id: "tarefas", label: "Tarefas" },
   { id: "lembretes", label: "Lembretes" },
   { id: "notas", label: "Notas" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
-
-type TaskRow = {
-  id: string;
-  kind: "task" | "reminder";
-  title: string;
-  due_date: string | null;
-  remind_at: string | null;
-  priority: "low" | "normal" | "high";
-  status: "open" | "done";
-};
-
-type NoteRow = { id: string; title: string; body: string; pinned: boolean };
 
 export default async function RotinaPage({
   searchParams,
@@ -47,7 +32,7 @@ export default async function RotinaPage({
   await connection();
   const sp = await searchParams;
   const raw = Array.isArray(sp.aba) ? sp.aba[0] : sp.aba;
-  const tab: Tab = TABS.find((t) => t.id === raw)?.id ?? "tarefas";
+  const tab: Tab = TABS.find((t) => t.id === raw)?.id ?? "hoje";
   const { today } = await getFormOptions();
 
   return (
@@ -56,8 +41,7 @@ export default async function RotinaPage({
         <div>
           <h1 className="text-2xl font-semibold">Rotina</h1>
           <p className="text-sm text-muted-foreground">
-            Tarefas, lembretes e anotações. Você também pode criá-los pela aba
-            Registrar.
+            Hábitos do dia, tarefas, lembretes e anotações.
           </p>
         </div>
         {tab === "notas" && <NoteDialog />}
@@ -65,7 +49,7 @@ export default async function RotinaPage({
 
       <nav
         aria-label="Seções da rotina"
-        className="flex w-fit gap-1 rounded-full border border-border bg-card/60 p-1"
+        className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-full border border-border bg-card/60 p-1"
       >
         {TABS.map((t) => (
           <Link
@@ -73,7 +57,7 @@ export default async function RotinaPage({
             href={`/rotina?aba=${t.id}`}
             aria-current={tab === t.id ? "page" : undefined}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-sm transition-colors",
+              "shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors",
               tab === t.id
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -84,10 +68,123 @@ export default async function RotinaPage({
         ))}
       </nav>
 
-      {tab === "notas" ? (
-        <Notes />
-      ) : (
+      {tab === "hoje" && <Today today={today} />}
+      {tab === "notas" && <Notes />}
+      {(tab === "tarefas" || tab === "lembretes") && (
         <Tasks kind={tab === "lembretes" ? "reminder" : "task"} today={today} />
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Hoje: hábitos do dia + tarefas e lembretes que vencem hoje (ou atrasaram)
+// ---------------------------------------------------------------------
+
+async function Today({ today }: { today: string }) {
+  const db = await createClient();
+  const [board, tasksRes] = await Promise.all([
+    getHabitBoard(today),
+    db
+      .from("tasks")
+      .select("id, kind, title, due_date, remind_at, priority, status")
+      .is("deleted_at", null)
+      .eq("status", "open")
+      .not("due_date", "is", null)
+      .lte("due_date", today)
+      .order("due_date", { ascending: true })
+      .limit(30),
+  ]);
+  const tasks = (tasksRes.data ?? []) as TaskRow[];
+
+  const scheduled = board.filter((h) => h.scheduledToday);
+  const others = board.filter((h) => !h.scheduledToday);
+  const { total, done } = summarizeToday(board);
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const longDate = formatLongDate(today);
+
+  return (
+    <div className="grid gap-4">
+      <Card>
+        <CardContent className="grid gap-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-medium first-letter:uppercase">{longDate}</h2>
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {total === 0
+                ? "Nenhum hábito para hoje"
+                : done === total
+                  ? `Tudo feito por hoje (${done} de ${total})`
+                  : `${done} de ${total} hábitos feitos`}
+            </span>
+          </div>
+          {total > 0 && (
+            <div
+              className="h-2 rounded-full bg-muted"
+              role="progressbar"
+              aria-valuenow={pct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Hábitos feitos hoje"
+            >
+              <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(pct, done > 0 ? 3 : 0)}%` }} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Hábitos de hoje</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {scheduled.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              {board.length === 0
+                ? "Você ainda não tem hábitos. Adicione o primeiro abaixo, como “Tomar creatina”."
+                : "Nenhum hábito previsto para hoje."}
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {scheduled.map((h) => (
+                <HabitRow key={h.id} habit={h} today={today} />
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {others.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-sm text-muted-foreground select-none">
+            Fora da agenda de hoje ({others.length})
+          </summary>
+          <Card className="mt-2">
+            <CardContent>
+              <ul className="divide-y divide-border">
+                {others.map((h) => (
+                  <HabitRow key={h.id} habit={h} today={today} />
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </details>
+      )}
+
+      <HabitComposer />
+
+      {tasks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tarefas e lembretes para hoje</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-border">
+              {tasks.map((t) => (
+                <TaskItem key={t.id} task={t} today={today} />
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
@@ -160,56 +257,6 @@ async function Tasks({ kind, today }: { kind: "task" | "reminder"; today: string
   );
 }
 
-function TaskItem({ task, today }: { task: TaskRow; today: string }) {
-  const isDone = task.status === "done";
-  const overdue = !isDone && task.due_date !== null && task.due_date < today;
-
-  let when = "";
-  if (task.due_date) {
-    when = task.due_date === today ? "hoje" : formatDayMonth(task.due_date);
-    if (task.remind_at) when += ` às ${formatTimeBR(task.remind_at)}`;
-  }
-
-  return (
-    <li className="flex items-center gap-3 py-2.5">
-      <form action={toggleTaskAction}>
-        <input type="hidden" name="id" value={task.id} />
-        <input type="hidden" name="done" value={String(!isDone)} />
-        <button
-          type="submit"
-          aria-label={isDone ? "Reabrir" : "Concluir"}
-          className={cn(
-            "flex size-5 items-center justify-center rounded-md border border-input transition-colors hover:border-ring",
-            isDone && "border-primary bg-primary text-primary-foreground",
-          )}
-        >
-          {isDone && <CheckIcon className="size-3.5" />}
-        </button>
-      </form>
-
-      <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-sm", isDone && "text-muted-foreground line-through")}>
-          {task.title}
-        </p>
-        {when && (
-          <p className={cn("text-xs", overdue ? "text-destructive" : "text-muted-foreground")}>
-            {overdue ? `Atrasada · ${when}` : when}
-          </p>
-        )}
-      </div>
-
-      {task.priority === "high" && !isDone && <Badge variant="outline">Alta</Badge>}
-
-      <form action={deleteTaskAction}>
-        <input type="hidden" name="id" value={task.id} />
-        <Button type="submit" variant="ghost" size="icon-sm" aria-label="Excluir">
-          <Trash2Icon />
-        </Button>
-      </form>
-    </li>
-  );
-}
-
 // ---------------------------------------------------------------------
 // Notas
 // ---------------------------------------------------------------------
@@ -242,35 +289,7 @@ async function Notes() {
     <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {notes.map((note) => (
         <li key={note.id}>
-          <Card className="h-full">
-            <CardContent className="flex h-full flex-col gap-2">
-              {note.title && <p className="font-medium">{note.title}</p>}
-              <p className="line-clamp-6 text-sm whitespace-pre-wrap text-muted-foreground">
-                {note.body}
-              </p>
-              <div className="mt-auto flex items-center justify-end">
-                <form action={toggleNotePinAction}>
-                  <input type="hidden" name="id" value={note.id} />
-                  <input type="hidden" name="pinned" value={String(!note.pinned)} />
-                  <Button
-                    type="submit"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={note.pinned ? "Desafixar" : "Fixar no topo"}
-                  >
-                    {note.pinned ? <PinOffIcon /> : <PinIcon />}
-                  </Button>
-                </form>
-                <NoteDialog note={note} />
-                <form action={deleteNoteAction}>
-                  <input type="hidden" name="id" value={note.id} />
-                  <Button type="submit" variant="ghost" size="icon-sm" aria-label="Excluir nota">
-                    <Trash2Icon />
-                  </Button>
-                </form>
-              </div>
-            </CardContent>
-          </Card>
+          <NoteCard note={note} />
         </li>
       ))}
     </ul>

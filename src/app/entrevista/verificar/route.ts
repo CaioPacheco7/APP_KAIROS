@@ -4,7 +4,7 @@ import { setOnboardedCookie } from "@/server/core/onboarding-cookie";
 
 /** Só aceita caminhos internos ("/algo"), nunca endereços externos. */
 function safeNext(value: string | null): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
   return value;
 }
 

@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "KAIROS",
   description:
     "Finanças, rotina e objetivos em um só lugar. Entenda onde você está e decida para onde quer ir.",
-  icons: { icon: "/brand/icone.png" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

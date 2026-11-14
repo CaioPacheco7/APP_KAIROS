@@ -26,7 +26,7 @@ export default function EntrarPage({
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="flex w-full max-w-sm flex-col items-center gap-8 text-center">
         <Image
-          src="/brand/icone.png"
+          src="/brand/icone-card.png"
           alt="KAIROS"
           width={96}
           height={96}
