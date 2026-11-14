@@ -30,8 +30,11 @@ export function HabitComposer() {
   });
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="grid gap-3 rounded-xl border border-dashed border-border p-4">
-      <p className="text-sm font-medium">Adicionar um hábito</p>
+    <form ref={formRef} onSubmit={onSubmit} className="grid grid-cols-1 gap-4 rounded-2xl border border-dashed border-border bg-card/40 p-5">
+      <div>
+        <p className="font-display text-2xl leading-tight">Adicionar um hábito</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">O que você quer fazer todo dia (ou em alguns dias da semana).</p>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {SUGGESTIONS.map((s) => (
@@ -39,7 +42,7 @@ export function HabitComposer() {
             key={s}
             type="button"
             onClick={() => setName(s)}
-            className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-gold-fill/50 hover:text-foreground"
           >
             {s}
           </button>
@@ -55,10 +58,9 @@ export function HabitComposer() {
           aria-label="Nome do hábito"
           autoComplete="off"
           maxLength={80}
-          className="h-9"
           aria-invalid={Boolean(fieldError("name"))}
         />
-        <Button type="submit" size="lg" disabled={pending} className="shrink-0">
+        <Button type="submit" variant="gold" disabled={pending} className="shrink-0">
           <PlusIcon /> Adicionar
         </Button>
       </div>

@@ -27,7 +27,7 @@ export function TaskItem({ task, today }: { task: TaskRow; today: string }) {
   }
 
   return (
-    <li className="flex items-center gap-3 py-2.5">
+    <li className="group/task flex items-center gap-3.5 py-3">
       <form action={toggleTaskAction}>
         <input type="hidden" name="id" value={task.id} />
         <input type="hidden" name="done" value={String(!isDone)} />
@@ -35,16 +35,16 @@ export function TaskItem({ task, today }: { task: TaskRow; today: string }) {
           type="submit"
           aria-label={isDone ? "Reabrir" : "Concluir"}
           className={cn(
-            "flex size-5 items-center justify-center rounded-md border border-input transition-colors hover:border-ring",
-            isDone && "border-primary bg-primary text-primary-foreground",
+            "grid size-6 place-items-center rounded-full border-2 border-input transition-colors hover:border-gold-fill hover:bg-gold-soft",
+            isDone && "border-gold-fill bg-gold-fill text-[#1f1707] hover:bg-gold-fill",
           )}
         >
-          {isDone && <CheckIcon className="size-3.5" />}
+          {isDone && <CheckIcon className="size-3.5" strokeWidth={3} />}
         </button>
       </form>
 
       <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-sm", isDone && "text-muted-foreground line-through")}>
+        <p className={cn("truncate text-[0.9375rem]", isDone && "text-muted-foreground line-through")}>
           {task.title}
         </p>
         {when && (
@@ -54,11 +54,11 @@ export function TaskItem({ task, today }: { task: TaskRow; today: string }) {
         )}
       </div>
 
-      {task.priority === "high" && !isDone && <Badge variant="outline">Alta</Badge>}
+      {task.priority === "high" && !isDone && <Badge variant="gold">Alta</Badge>}
 
       <form action={deleteTaskAction}>
         <input type="hidden" name="id" value={task.id} />
-        <Button type="submit" variant="ghost" size="icon-sm" aria-label="Excluir">
+        <Button type="submit" variant="ghost" size="icon-sm" aria-label="Excluir" className="text-muted-foreground md:opacity-0 md:group-hover/task:opacity-100 md:focus-visible:opacity-100">
           <Trash2Icon />
         </Button>
       </form>

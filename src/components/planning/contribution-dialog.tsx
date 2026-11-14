@@ -63,7 +63,7 @@ function ContributionForm({ goal, accounts, today, onDone }: Props & { onDone: (
   );
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       <input type="hidden" name="goal_id" value={goal.id} />
 
       <div className="grid grid-cols-2 gap-3">
@@ -79,7 +79,7 @@ function ContributionForm({ goal, accounts, today, onDone }: Props & { onDone: (
           />
         </Field>
         <Field label="Data" htmlFor="ct-date" error={fieldError("date")}>
-          <Input id="ct-date" name="date" type="date" defaultValue={today} className="[color-scheme:dark]" />
+          <Input id="ct-date" name="date" type="date" defaultValue={today}  />
         </Field>
       </div>
 

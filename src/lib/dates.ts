@@ -116,3 +116,21 @@ export function formatLongDate(iso: string): string {
     month: "long",
   }).format(new Date(Date.UTC(y, m - 1, d)));
 }
+
+/** Hora cheia (0–23) no fuso de São Paulo. */
+export function hourInSaoPaulo(now: Date = new Date()): number {
+  return Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TIMEZONE,
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(now),
+  );
+}
+
+/** 5–11h bom dia · 12–17h boa tarde · resto boa noite */
+export function greetingForHour(hour: number): string {
+  if (hour >= 5 && hour < 12) return "Bom dia";
+  if (hour >= 12 && hour < 18) return "Boa tarde";
+  return "Boa noite";
+}

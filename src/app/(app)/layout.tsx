@@ -1,31 +1,31 @@
-import Image from "next/image";
+import { LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { NewTransaction } from "@/components/app/new-transaction";
-import { FinanceOnly, FinanceSubNav, TopNav } from "@/components/app/top-nav";
+import { ThemeToggle } from "@/components/app/theme-toggle";
+import { FinanceOnly, FinanceSubNav, MobileNav, TopNav } from "@/components/app/top-nav";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Button } from "@/components/ui/button";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-(--header-bg) backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 px-4 sm:px-6">
           <Link
             href="/"
-            className="flex items-center gap-2"
             aria-label="KAIROS, ir para o início"
+            className="flex h-16 items-center"
           >
-            <Image src="/brand/icone-card.png" alt="" width={32} height={32} />
-            <span className="hidden text-sm font-semibold tracking-[0.25em] sm:inline">
-              KAIROS
-            </span>
+            <BrandMark />
           </Link>
 
-          <div className="order-last w-full md:order-none md:w-auto">
+          {/* centro: navegação principal (no celular fica na barra de baixo) */}
+          <div className="hidden md:block">
             <TopNav />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <FinanceOnly>
               <Suspense
                 fallback={
@@ -37,9 +37,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <NewTransaction />
               </Suspense>
             </FinanceOnly>
+            <ThemeToggle />
             <form action="/auth/sair" method="post">
-              <Button type="submit" variant="ghost" size="sm">
-                Sair
+              <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground">
+                <LogOutIcon />
+                <span className="hidden sm:inline">Sair</span>
               </Button>
             </form>
           </div>
@@ -49,7 +51,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Cada página tem o seu loading.tsx (carregamento instantâneo na navegação) */}
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 pb-28 sm:px-6 sm:pt-10 md:pb-14">
+        {children}
+      </div>
+
+      <MobileNav />
     </div>
   );
 }

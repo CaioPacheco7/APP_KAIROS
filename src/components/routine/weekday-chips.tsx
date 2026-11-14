@@ -10,8 +10,8 @@ export function WeekdayChips({
   idPrefix: string;
 }) {
   return (
-    <fieldset className="grid gap-1.5">
-      <legend className="mb-1.5 text-sm font-medium">Dias da semana</legend>
+    <fieldset className="grid grid-cols-1 gap-2">
+      <legend className="mb-1 text-sm font-medium">Dias da semana</legend>
       <div className="flex flex-wrap gap-1.5">
         {WEEKDAY_SHORT.map((label, i) => {
           const value = i + 1; // ISO: 1 = segunda
@@ -27,9 +27,10 @@ export function WeekdayChips({
               />
               <span
                 className={cn(
-                  "inline-flex h-8 min-w-11 items-center justify-center rounded-full border border-border px-3 text-xs transition-colors",
-                  "text-muted-foreground peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground",
-                  "peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+                  "inline-flex h-9 min-w-12 items-center justify-center rounded-full border border-border bg-card px-3 text-xs font-medium transition-colors",
+                  "text-muted-foreground hover:border-gold-fill/50",
+                  "peer-checked:border-gold-fill peer-checked:bg-gold-soft peer-checked:text-gold",
+                  "peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/40",
                 )}
               >
                 {label}

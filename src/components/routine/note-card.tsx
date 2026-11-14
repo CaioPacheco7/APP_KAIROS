@@ -9,9 +9,9 @@ export type NoteRow = { id: string; title: string; body: string; pinned: boolean
 /** Cartão de uma nota: fixar, editar e excluir. */
 export function NoteCard({ note, lines = 6 }: { note: NoteRow; lines?: number }) {
   return (
-    <Card className="h-full">
+    <Card className="h-full transition-all duration-300 hover:-translate-y-0.5">
       <CardContent className="flex h-full flex-col gap-2">
-        {note.title && <p className="font-medium">{note.title}</p>}
+        {note.title && <p className="font-display text-2xl leading-tight">{note.title}</p>}
         <p
           className="text-sm whitespace-pre-wrap text-muted-foreground"
           style={{

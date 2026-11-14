@@ -1,5 +1,6 @@
 "use client";
 
+import { Trash2Icon } from "lucide-react";
 import { ConfirmButton } from "@/components/confirm-button";
 import { deleteTransactionAction } from "@/server/transactions";
 import type { Transaction } from "@/types/database";
@@ -9,6 +10,7 @@ import {
   type CategoryOption,
 } from "./transaction-dialog";
 
+/** Editar e excluir: aparecem ao passar o mouse (no celular ficam sempre visíveis). */
 export function TransactionRowActions({
   transaction,
   accounts,
@@ -21,7 +23,7 @@ export function TransactionRowActions({
   today: string;
 }) {
   return (
-    <div className="flex items-center justify-end">
+    <div className="flex shrink-0 items-center transition-opacity md:opacity-0 md:group-focus-within/tx:opacity-100 md:group-hover/tx:opacity-100">
       <TransactionDialog
         transaction={transaction}
         accounts={accounts}
@@ -33,9 +35,11 @@ export function TransactionRowActions({
         <ConfirmButton
           message="Excluir esta transação? O saldo será recalculado."
           variant="ghost"
-          size="sm"
+          size="icon-sm"
+          aria-label="Excluir transação"
+          className="text-muted-foreground"
         >
-          Excluir
+          <Trash2Icon />
         </ConfirmButton>
       </form>
     </div>

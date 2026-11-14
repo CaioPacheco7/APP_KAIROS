@@ -129,7 +129,7 @@ export function InterviewWizard({
         }
         onSubmit(event);
       }}
-      className="grid gap-6"
+      className="grid grid-cols-1 gap-6"
     >
       <input type="hidden" name="name" value={name} />
       <input type="hidden" name="income" value={income} />
@@ -145,7 +145,7 @@ export function InterviewWizard({
       />
 
       {/* Progresso */}
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 gap-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             {step === "welcome" ? "Bem-vindo" : `Passo ${index} de ${steps.length - 1}`}
@@ -156,8 +156,8 @@ export function InterviewWizard({
             <span
               key={s}
               className={cn(
-                "h-1 flex-1 rounded-full bg-muted",
-                i < index && "bg-primary",
+                "h-1.5 flex-1 rounded-full bg-muted transition-colors duration-500",
+                i < index && "bg-gold-fill",
               )}
             />
           ))}
@@ -165,16 +165,16 @@ export function InterviewWizard({
       </div>
 
       {step === "welcome" && (
-        <div className="grid gap-4 text-center">
+        <div className="grid grid-cols-1 gap-5">
           <Image
             src="/brand/icone-card.png"
             alt=""
             width={72}
             height={72}
-            className="mx-auto"
+            className="lg:hidden"
             priority
           />
-          <h1 className="text-2xl font-semibold">Vamos começar a controlar seus gastos</h1>
+          <h1 className="font-display text-5xl leading-[1.05] tracking-tight">Vamos começar a controlar seus <em className="text-gold">gastos</em></h1>
           <p className="text-sm text-muted-foreground">
             Para cuidar bem das suas finanças, preciso te conhecer um pouco.
             São poucas perguntas, leva cerca de 2 minutos: quanto você ganha,
@@ -189,8 +189,8 @@ export function InterviewWizard({
       )}
 
       {step === "name" && (
-        <div className="grid gap-4">
-          <h2 className="text-xl font-semibold">Como você quer ser chamado?</h2>
+        <div className="grid grid-cols-1 gap-4">
+          <h2 className="font-display text-4xl leading-tight tracking-tight">Como você quer ser chamado?</h2>
           <Field label="Seu nome" htmlFor="iv-name" error={fieldError("name")}>
             <Input
               id="iv-name"
@@ -205,8 +205,8 @@ export function InterviewWizard({
       )}
 
       {step === "income" && (
-        <div className="grid gap-4">
-          <h2 className="text-xl font-semibold">
+        <div className="grid grid-cols-1 gap-4">
+          <h2 className="font-display text-4xl leading-tight tracking-tight">
             {name ? `${name}, ` : ""}quanto você ganha por mês?
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -239,8 +239,8 @@ export function InterviewWizard({
       )}
 
       {step === "account" && (
-        <div className="grid gap-4">
-          <h2 className="text-xl font-semibold">Quanto você tem hoje?</h2>
+        <div className="grid grid-cols-1 gap-4">
+          <h2 className="font-display text-4xl leading-tight tracking-tight">Quanto você tem hoje?</h2>
           <p className="text-sm text-muted-foreground">
             Ponto de partida do seu saldo: o que você tem agora na conta
             principal (ou na carteira). Pode ser zero.
@@ -271,8 +271,8 @@ export function InterviewWizard({
       )}
 
       {step === "fixed" && (
-        <div className="grid gap-4">
-          <h2 className="text-xl font-semibold">Quais contas se repetem todo mês?</h2>
+        <div className="grid grid-cols-1 gap-4">
+          <h2 className="font-display text-4xl leading-tight tracking-tight">Quais contas se repetem todo mês?</h2>
           <p className="text-sm text-muted-foreground">
             Aluguel, água, luz, parcelas, mercado… Toque nas sugestões ou
             adicione as suas. Você pode ajustar tudo depois em “Meu mês”.
@@ -292,7 +292,7 @@ export function InterviewWizard({
           </div>
 
           {fixed.length > 0 && (
-            <ul className="grid gap-2">
+            <ul className="grid grid-cols-1 gap-2">
               {fixed.map((row) => (
                 <li key={row.key} className="grid grid-cols-[1fr_6.5rem_3.5rem_auto] items-center gap-2">
                   <Input
@@ -352,8 +352,8 @@ export function InterviewWizard({
       )}
 
       {step === "review" && (
-        <div className="grid gap-4">
-          <h2 className="text-xl font-semibold">Seu mês, {name || "pronto"}</h2>
+        <div className="grid grid-cols-1 gap-4">
+          <h2 className="font-display text-4xl leading-tight tracking-tight">Seu mês, {name || "pronto"}</h2>
           <HealthSummary health={preview} />
           <dl className="grid grid-cols-3 gap-3 text-sm">
             <div>

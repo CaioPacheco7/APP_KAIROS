@@ -24,7 +24,7 @@ export function TaskComposer({
   const isReminder = kind === "reminder";
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="grid gap-2">
+    <form ref={formRef} onSubmit={onSubmit} className="grid grid-cols-1 gap-2">
       <input type="hidden" name="kind" value={kind} />
       <div className="flex flex-wrap items-center gap-2">
         <Input
@@ -33,7 +33,7 @@ export function TaskComposer({
           aria-label={isReminder ? "Lembrete" : "Tarefa"}
           autoComplete="off"
           maxLength={160}
-          className="h-9 min-w-48 flex-1"
+          className="min-w-48 flex-1"
           aria-invalid={Boolean(fieldError("title"))}
         />
         <Input
@@ -41,27 +41,27 @@ export function TaskComposer({
           type="date"
           aria-label={isReminder ? "Dia do lembrete" : "Prazo (opcional)"}
           defaultValue={isReminder ? today : ""}
-          className="h-9 w-40 [color-scheme:dark]"
+          className="w-40"
         />
         {isReminder && (
           <Input
             name="time"
             type="time"
             aria-label="Hora (opcional)"
-            className="h-9 w-28 [color-scheme:dark]"
+            className="w-28"
           />
         )}
         <NativeSelect
           name="priority"
           aria-label="Prioridade"
           defaultValue="normal"
-          className="h-9 w-32"
+          className="w-32"
         >
           <option value="low">Baixa</option>
           <option value="normal">Normal</option>
           <option value="high">Alta</option>
         </NativeSelect>
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button type="submit" variant="gold" disabled={pending}>
           <PlusIcon /> Adicionar
         </Button>
       </div>

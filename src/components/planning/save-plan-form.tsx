@@ -38,7 +38,7 @@ export function SavePlanForm({
   );
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-2 border-t border-border pt-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-2 border-t border-border pt-3">
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="target" value={centsToInput(target)} />
       <input type="hidden" name="monthly" value={centsToInput(monthly)} />

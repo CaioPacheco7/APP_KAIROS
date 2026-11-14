@@ -3,6 +3,7 @@
 import {
   Bar,
   BarChart,
+  Cell,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -27,7 +28,7 @@ type TooltipProps = {
 function ChartTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md ring-1 ring-foreground/10">
+    <div className="rounded-xl bg-popover px-3.5 py-2.5 text-xs text-popover-foreground shadow-pop ring-1 ring-foreground/10">
       <p className="mb-1 font-medium capitalize">{label}</p>
       {payload.map((item) => (
         <p key={item.name} className="flex items-center gap-2">
@@ -51,7 +52,7 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
   const empty = data.every((d) => d.income === 0 && d.expense === 0);
 
   return (
-    <figure className="grid gap-3">
+    <figure className="grid grid-cols-1 gap-3">
       <figcaption className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="size-2 rounded-full" style={{ background: "var(--series-1)" }} />
@@ -68,7 +69,7 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
           Sem movimentação nos últimos meses.
         </p>
       ) : (
-        <div className="h-60 w-full" role="img" aria-label="Receitas e despesas por mês">
+        <div className="h-64 w-full" role="img" aria-label="Receitas e despesas por mês">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} barGap={4} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--viz-grid)" />
@@ -89,8 +90,16 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
                 cursor={{ fill: "var(--muted)", opacity: 0.35 }}
                 content={(props) => <ChartTooltip {...(props as TooltipProps)} />}
               />
-              <Bar dataKey="income" name="Receitas" fill="var(--series-1)" radius={[4, 4, 0, 0]} maxBarSize={26} />
-              <Bar dataKey="expense" name="Despesas" fill="var(--series-2)" radius={[4, 4, 0, 0]} maxBarSize={26} />
+              <Bar dataKey="income" name="Receitas" fill="var(--series-1)" radius={[8, 8, 2, 2]} maxBarSize={24}>
+                {data.map((d, i) => (
+                  <Cell key={d.month} fillOpacity={i === data.length - 1 ? 1 : 0.55} />
+                ))}
+              </Bar>
+              <Bar dataKey="expense" name="Despesas" fill="var(--series-2)" radius={[8, 8, 2, 2]} maxBarSize={24}>
+                {data.map((d, i) => (
+                  <Cell key={d.month} fillOpacity={i === data.length - 1 ? 1 : 0.55} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

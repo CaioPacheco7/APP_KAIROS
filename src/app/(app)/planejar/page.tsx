@@ -1,6 +1,15 @@
-import { CheckCircle2Icon, FlagIcon, ShieldAlertIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  FlagIcon,
+  ShieldCheckIcon,
+  TargetIcon,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
+import { EmptyState } from "@/components/app/empty-state";
+import { IconChip } from "@/components/app/icon-chip";
 import { ConfirmButton } from "@/components/confirm-button";
 import { ContributionDialog } from "@/components/planning/contribution-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -37,50 +46,61 @@ export default async function PlanejarPage() {
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name }));
 
   return (
-    <div className="grid gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Planejar</h1>
-        <p className="text-sm text-muted-foreground">
-          Simule o caminho até uma conquista ou para sair de uma dívida, e acompanhe o progresso.
-        </p>
-      </header>
+    <div className="grid grid-cols-1 gap-10">
+      {/* Capa com foto + os dois caminhos sobrepostos */}
+      <div className="grid">
+        <section className="animate-rise relative overflow-hidden rounded-3xl border border-border shadow-card">
+          <Image
+            src="/photos/planejar-lago.jpg"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1152px) 1152px, 100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/10" />
+          <div className="relative max-w-2xl px-6 pt-10 pb-28 text-white sm:px-10 sm:pt-14 sm:pb-32">
+            <p className="eyebrow mb-4 !text-[#e6cc90]">Finanças · Planejar</p>
+            <h1 className="font-display text-5xl leading-[1.04] tracking-tight sm:text-6xl">
+              Para onde você quer ir?
+            </h1>
+            <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-white/85">
+              Simule o caminho até uma conquista ou para sair de uma dívida e acompanhe o seu progresso, mês a mês.
+            </p>
+          </div>
+        </section>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link href="/planejar/conquista" className="group">
-          <Card className="h-full transition-colors group-hover:bg-muted/40">
-            <CardContent className="grid gap-2">
-              <FlagIcon className="size-5 text-muted-foreground" aria-hidden />
-              <h2 className="font-medium">Conquistar algo</h2>
-              <p className="text-sm text-muted-foreground">
-                Uma moto, uma viagem, uma reserva. Veja em quanto tempo você chega lá com o que sobra do mês.
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/planejar/divida" className="group">
-          <Card className="h-full transition-colors group-hover:bg-muted/40">
-            <CardContent className="grid gap-2">
-              <ShieldAlertIcon className="size-5 text-muted-foreground" aria-hidden />
-              <h2 className="font-medium">Sair de uma dívida</h2>
-              <p className="text-sm text-muted-foreground">
-                Cartão, empréstimo, atraso. Compare parcelamentos e veja o que cabe no seu orçamento.
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+        <div className="relative z-10 -mt-16 grid gap-4 px-4 sm:grid-cols-2 sm:px-8">
+          <ChoiceCard
+            href="/planejar/conquista"
+            icon={FlagIcon}
+            tone="gold"
+            title="Conquistar algo"
+            delay={120}
+          >
+            Uma moto, uma viagem, uma reserva. Veja em quanto tempo você chega lá com o que sobra do mês.
+          </ChoiceCard>
+          <ChoiceCard
+            href="/planejar/divida"
+            icon={ShieldCheckIcon}
+            tone="sage"
+            title="Sair de uma dívida"
+            delay={180}
+          >
+            Cartão, empréstimo, atraso. Compare parcelamentos e veja o que cabe no seu orçamento.
+          </ChoiceCard>
+        </div>
       </div>
 
-      <section className="grid gap-3">
-        <h2 className="text-lg font-medium">Meus planos</h2>
+      <section className="grid grid-cols-1 gap-5">
+        <h2 className="font-display text-3xl tracking-tight">Meus planos</h2>
         {goals.length === 0 ? (
-          <Card>
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              Nenhum plano ainda. Escolha um dos caminhos acima para simular e salvar o seu primeiro.
-            </CardContent>
-          </Card>
+          <EmptyState icon={TargetIcon} title="Nenhum plano ainda">
+            Escolha um dos caminhos acima, simule e salve o seu primeiro plano. Depois é só registrar os aportes.
+          </EmptyState>
         ) : (
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {goals.map((goal) => {
+          <ul className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {goals.map((goal, i) => {
               const done = Number(contributed.get(goal.id) ?? 0);
               const target = Number(goal.target_amount);
               const monthly = Number(goal.monthly_amount);
@@ -91,19 +111,26 @@ export default async function PlanejarPage() {
               const isDebt = goal.kind === "debt";
 
               return (
-                <li key={goal.id}>
-                  <Card>
-                    <CardContent className="grid gap-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium">{goal.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {isDebt ? "Dívida" : "Meta"} · {formatBRL(monthly)} por mês
-                            {goal.months_planned ? ` · ${goal.months_planned} meses` : ""}
-                          </p>
+                <li key={goal.id} className="animate-rise" style={{ "--d": `${i * 60}ms` } as React.CSSProperties}>
+                  <Card className="h-full">
+                    <CardContent className="grid grid-cols-1 gap-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <IconChip
+                            icon={isDebt ? ShieldCheckIcon : FlagIcon}
+                            tone={isDebt ? "sage" : "gold"}
+                            className="size-11"
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{goal.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {isDebt ? "Dívida" : "Meta"} · {formatBRL(monthly)} por mês
+                              {goal.months_planned ? ` · ${goal.months_planned} meses` : ""}
+                            </p>
+                          </div>
                         </div>
                         {finished ? (
-                          <Badge className="gap-1">
+                          <Badge variant="gold" className="gap-1">
                             <CheckCircle2Icon /> Concluído
                           </Badge>
                         ) : (
@@ -111,20 +138,34 @@ export default async function PlanejarPage() {
                         )}
                       </div>
 
-                      <div className="grid gap-1.5">
-                        <div className="h-2 rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de ${goal.title}`}>
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(pct, done > 0 ? 2 : 0)}%` }} />
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="flex items-end justify-between gap-3">
+                          <p className="font-display text-6xl leading-none tracking-normal tabular-nums">
+                            {Math.round(pct)}
+                            <span className="text-3xl text-muted-foreground">%</span>
+                          </p>
+                          <p className="pb-1 text-right text-xs text-muted-foreground tabular-nums">
+                            {formatBRL(done)} de {formatBRL(target)}
+                          </p>
                         </div>
-                        <div className="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground tabular-nums">
-                          <span>
-                            {formatBRL(done)} de {formatBRL(target)} ({Math.round(pct)}%)
-                          </span>
-                          <span>
-                            {finished
-                              ? "Plano concluído"
-                              : `Faltam ${formatBRL(left)}${monthsLeft ? ` · ~${monthsLeft} ${monthsLeft === 1 ? "mês" : "meses"}` : ""}`}
-                          </span>
+                        <div
+                          className="h-2.5 rounded-full bg-muted"
+                          role="progressbar"
+                          aria-valuenow={Math.round(pct)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`Progresso de ${goal.title}`}
+                        >
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-gold-fill/70 to-gold-fill"
+                            style={{ width: `${Math.max(pct, done > 0 ? 2 : 0)}%` }}
+                          />
                         </div>
+                        <p className="text-sm text-muted-foreground tabular-nums">
+                          {finished
+                            ? "Plano concluído. Parabéns!"
+                            : `Faltam ${formatBRL(left)}${monthsLeft ? ` · cerca de ${monthsLeft} ${monthsLeft === 1 ? "mês" : "meses"}` : ""}`}
+                        </p>
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
@@ -143,6 +184,7 @@ export default async function PlanejarPage() {
                             message={`Excluir o plano "${goal.title}"? O histórico de aportes dele some das telas.`}
                             variant="ghost"
                             size="sm"
+                            className="text-muted-foreground"
                           >
                             Excluir
                           </ConfirmButton>
@@ -157,5 +199,43 @@ export default async function PlanejarPage() {
         )}
       </section>
     </div>
+  );
+}
+
+function ChoiceCard({
+  href,
+  icon,
+  tone,
+  title,
+  children,
+  delay,
+}: {
+  href: string;
+  icon: typeof FlagIcon;
+  tone: "gold" | "sage";
+  title: string;
+  children: React.ReactNode;
+  delay: number;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group animate-rise rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
+      style={{ "--d": `${delay}ms` } as React.CSSProperties}
+    >
+      <Card className="h-full shadow-pop transition-all duration-300 group-hover:-translate-y-1 group-hover:border-gold-fill/50">
+        <CardContent className="grid grid-cols-1 gap-4">
+          <IconChip icon={icon} tone={tone} className="size-12 rounded-2xl" />
+          <div>
+            <h2 className="font-display text-3xl leading-tight tracking-tight">{title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</p>
+          </div>
+          <span className="flex items-center gap-1.5 text-sm font-medium text-gold">
+            Começar a simular
+            <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
+          </span>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
