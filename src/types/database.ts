@@ -86,3 +86,14 @@ export type Profile = {
   health_green_max: number;
   health_yellow_max: number;
 };
+
+export type Goal = {
+  id: string;
+  kind: "purchase" | "debt";
+  title: string;
+  target_amount: number;
+  monthly_amount: number;
+  months_planned: number | null;
+  rate_pct_month: number;
+  status: "active" | "done" | "paused";
+};

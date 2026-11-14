@@ -194,6 +194,15 @@ Dashboard mostra: tarefas de hoje, hábitos pendentes, contas que vencem nos pr�
 - **RN-18** Exclusão de dados importantes é lógica (`deleted_at`); a exclusão definitiva só acontece pela opção "apagar minha conta".
 - **RN-19** Todo dado é do usuário dono do registro; o acesso é imposto pelo banco (RLS), não só pelo código.
 
+### Entrevista, contas fixas e semáforo
+- **RN-20** O app só é liberado depois da **entrevista inicial**. Ela é concluída numa única transação no banco: se algo falhar, nada é criado. Só pode ser feita uma vez.
+- **RN-21** Salário e contas fixas são **recorrências**. Cada mês vira uma transação **pendente** (agendada), com chave única por recorrência/mês (gerar de novo não duplica). Dia 31 em mês curto vira o último dia do mês. Se a pessoa exclui a instância de um mês, ela não volta.
+- **RN-22** Editar uma recorrência altera só as instâncias **pendentes** do mês atual em diante (o que já foi pago não muda). Encerrar remove as pendentes daqui para frente e mantém o histórico.
+- **RN-23** Conta fixa pendente com data anterior a hoje aparece como **atrasada**. "Paguei/Recebi" efetiva a transação (passa a contar no saldo); "Desfazer" volta para pendente.
+- **RN-24** **Semáforo:** compara o que está **comprometido** no mês (despesas pagas + agendadas) com a renda do mês (recebida + a receber). 🟢 até 70% · 🟡 até 90% · 🔴 acima, ou se o ritmo de gastos do dia a dia, projetado até o fim do mês, passar do limite (a projeção só vale a partir do 7º dia). Limites ajustáveis por usuário (`health_green_max`, `health_yellow_max`). Sempre mostra ícone e texto, não só cor.
+- **RN-25** **Planejar uma conquista:** sobra = renda − gastos mensais. Cenários: no ritmo com folga (90% da sobra), usando toda a sobra, e no prazo desejado (mostra quanto falta quando não cabe). Rendimento é opcional e informado pela pessoa. É simulação, não recomendação de investimento.
+- **RN-26** **Planejar sair de dívida:** sobra = renda − gastos essenciais. Compara parcelamentos (3 a 36x, tabela Price com os juros informados) e pagar com 80% da sobra. Recomenda o prazo mais curto cuja parcela cabe com folga; avisa quando nada cabe e orienta a negociar. Sem juros informados, avisa que o custo real é maior.
+
 ---
 
 ## 8. Estrutura do banco de dados (PostgreSQL / Supabase)
@@ -306,15 +315,25 @@ Princípio: **usar o app o mais cedo possível**. Cada fase termina com algo que
 
 **Critério de pronto:** você lança suas transações reais por 2 semanas sem voltar para a planilha.
 
-### Fase 2 — Cartões e planejamento
-- Cartões, faturas, parcelamento, pagamento de fatura
-- Recorrências
-- Orçamento por categoria + alertas
-- Dashboard: orçamento vs realizado, faturas a vencer, projeção do mês
+### Fase 1.5 — Entrevista, contas fixas, semáforo e planejamento (branches `feature/...`)
 
-### Fase 3 — Objetivos
-- Metas financeiras e pessoais, contribuições, previsão
-- Dashboard de metas
+> Decisão de 14/11/2026, a partir do pedido do Caio: o app precisa conhecer a renda da pessoa para ajudar de verdade.
+
+- **Entrevista inicial** obrigatória: nome, renda mensal e dia de recebimento, saldo atual, contas fixas (ex.: água, luz, consórcio, alimentação). Termina com uma prévia do semáforo
+- **Meu mês:** entradas e contas fixas viram lançamentos agendados todo mês; "paguei/recebi" debita do saldo; atrasadas em destaque
+- **Semáforo de saúde financeira** 🟢🟡🔴 no dashboard e em Meu mês, com mensagem e projeção do ritmo de gastos
+- **Planejar:** simulador de **conquista** (ex.: moto de R$ 23.000 com renda 2.500 e gastos 1.700: quanto guardar por mês e em quanto tempo) e de **saída de dívida** (ex.: cartão de R$ 1.900 com renda 1.500: compara parcelamentos), com planos salvos e progresso por aporte/pagamento
+- Sem IA: tudo é cálculo transparente com os números informados pela pessoa
+
+### Fase 2 — Cartões e orçamento
+- Cartões, faturas, parcelamento, pagamento de fatura
+- Orçamento por categoria + alertas (ex.: "alimentação até R$ 600")
+- Dashboard: orçamento vs realizado, faturas a vencer
+- (Recorrências já entregues na Fase 1.5)
+
+### Fase 3 — Objetivos pessoais
+- Metas não financeiras (marcos e prazos)
+- Dashboard de metas e integração dos planos com o orçamento (reservar o aporte mensal)
 
 ### Fase 4 — Rotina avançada
 - Calendário (inclui vencimentos financeiros), hábitos, notificações dos lembretes

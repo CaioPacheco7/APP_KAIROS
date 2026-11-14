@@ -19,7 +19,7 @@ Next.js (App Router) + TypeScript · Tailwind CSS + shadcn/ui · Supabase (Postg
    ```bash
    npm install
    ```
-2. Crie um projeto no [Supabase](https://supabase.com) e rode, **em ordem**, os arquivos de `supabase/migrations/` no SQL Editor.
+2. Crie um projeto no [Supabase](https://supabase.com) e rode, **em ordem**, os 4 arquivos de `supabase/migrations/` no SQL Editor (núcleo financeiro, chat e rotina, entrevista e contas fixas, planos).
 3. Copie `.env.example` para `.env.local` e preencha a URL e a publishable key do projeto.
 4. Ative o provedor Google em *Authentication → Providers* e cadastre `http://localhost:3000/auth/callback` nas URLs de redirecionamento.
 5. Libere seu e-mail para cadastro (o app aceita apenas e-mails da lista):
