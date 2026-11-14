@@ -136,3 +136,10 @@
   --series-2: #d95926;
   --viz-grid: oklch(1 0 0 / 8%);
 }
+
+/* Cores de status (paleta fixa do dataviz). Sempre acompanham ícone + texto. */
+:root {
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-critical: #d03b3b;
+}

@@ -63,3 +63,33 @@ export const getCategoryNames = cache(async (): Promise<Map<string, string>> => 
   const { data } = await db.from("categories").select("id, name");
   return new Map(((data ?? []) as { id: string; name: string }[]).map((c) => [c.id, c.name]));
 });
+
+export const getProfile = cache(async () => {
+  const db = await createClient();
+  const { data } = await db
+    .from("profiles")
+    .select("id, name, onboarded_at, health_green_max, health_yellow_max")
+    .maybeSingle();
+  return data as import("@/types/database").Profile | null;
+});
+
+/** Contas fixas ativas (salário e despesas recorrentes). */
+export const getRecurrences = cache(async () => {
+  const db = await createClient();
+  const { data } = await db
+    .from("recurrences")
+    .select("id, kind, description, amount, day_of_month, account_id, category_id, starts_on, active")
+    .is("deleted_at", null)
+    .order("kind", { ascending: true })
+    .order("day_of_month", { ascending: true });
+  return (data ?? []) as import("@/types/database").Recurrence[];
+});
+
+/**
+ * Garante que as contas fixas do mês existem como transações agendadas.
+ * Idempotente (a função do banco usa chave única por recorrência/mês).
+ */
+export async function ensureRecurring(month: string): Promise<void> {
+  const db = await createClient();
+  await db.rpc("generate_recurring_transactions", { p_month: `${month}-01` });
+}

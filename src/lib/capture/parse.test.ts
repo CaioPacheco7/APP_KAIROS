@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { extractAmount, extractDate, extractTime, parseCapture } from "./parse";
+import {
+  categoryHintFor,
+  extractAmount,
+  extractDate,
+  extractTime,
+  parseCapture,
+} from "./parse";
 
 const TODAY = "2026-11-13"; // sexta-feira
 
@@ -147,6 +153,21 @@ describe("entradas que não dá para entender", () => {
     expect(parseCapture("anotar:", TODAY).kind).toBe("unknown");
     expect(parseCapture("tarefa", TODAY).kind).toBe("unknown");
     expect(parseCapture("lembrar de", TODAY).kind).toBe("unknown");
+  });
+});
+
+describe("categoryHintFor (contas fixas da entrevista)", () => {
+  it.each([
+    ["Água", "expense", "Contas e taxas"],
+    ["Luz", "expense", "Contas e taxas"],
+    ["Consórcio da moto", "expense", "Outras despesas"],
+    ["Alimentação", "expense", "Mercado"],
+    ["Aluguel", "expense", "Moradia"],
+    ["Netflix", "expense", "Assinaturas"],
+    ["Salário", "income", "Salário"],
+    ["Coisa sem pista", "expense", null],
+  ] as const)("%s (%s) -> %s", (text, type, expected) => {
+    expect(categoryHintFor(text, type)).toBe(expected);
   });
 });
 
