@@ -105,3 +105,14 @@ export function formatTimeBR(isoTimestamp: string): string {
     minute: "2-digit",
   }).format(new Date(isoTimestamp));
 }
+
+/** "2026-11-14" -> "sábado, 14 de novembro" */
+export function formatLongDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "UTC",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date(Date.UTC(y, m - 1, d)));
+}

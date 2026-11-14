@@ -33,7 +33,7 @@ async function execute(
       if (!accountId) {
         return {
           content:
-            "Antes de lançar, crie uma conta (e informe o saldo inicial) em Contas.",
+            "Para lançar gastos e receitas, configure antes as suas finanças na aba Finanças.",
         };
       }
       const { data: account } = await db

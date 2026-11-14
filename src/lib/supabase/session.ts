@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { ONBOARDED_COOKIE } from "@/lib/onboarding";
+import { isFinancePath } from "@/lib/sections";
 
 /** Rotas acessíveis sem estar logado. */
 const PUBLIC_PATHS = ["/entrar", "/auth"];
@@ -13,7 +14,7 @@ function isPublic(pathname: string) {
 
 /**
  * Renova a sessão do Supabase a cada requisição, redireciona quem não está
- * logado para /entrar e quem ainda não fez a entrevista para /entrevista.
+ * logado para /entrar e, nas telas de Finanças, quem ainda não fez a entrevista.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -55,15 +56,11 @@ export async function updateSession(request: NextRequest) {
   };
 
   if (!isLoggedIn && !isPublic(pathname)) return redirectTo("/entrar");
-  if (isLoggedIn && pathname === "/entrar") return redirectTo("/dashboard");
+  if (isLoggedIn && pathname === "/entrar") return redirectTo("/");
 
-  // Entrevista inicial obrigatória antes de usar o app.
-  if (
-    isLoggedIn &&
-    !isPublic(pathname) &&
-    !pathname.startsWith("/entrevista") &&
-    !request.cookies.get(ONBOARDED_COOKIE)
-  ) {
+  // A entrevista só é exigida ao entrar no módulo Finanças. Rotina, notas e o
+  // chat de registro funcionam sem ela.
+  if (isLoggedIn && isFinancePath(pathname) && !request.cookies.get(ONBOARDED_COOKIE)) {
     return redirectTo("/entrevista/verificar", `?next=${encodeURIComponent(pathname)}`);
   }
 

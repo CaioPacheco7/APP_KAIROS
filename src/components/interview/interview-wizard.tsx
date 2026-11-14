@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HealthSummary } from "@/components/health/health-card";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { assessHealth } from "@/lib/finance/health";
@@ -166,19 +167,23 @@ export function InterviewWizard({
       {step === "welcome" && (
         <div className="grid gap-4 text-center">
           <Image
-            src="/brand/icone.png"
+            src="/brand/icone-card.png"
             alt=""
             width={72}
             height={72}
             className="mx-auto"
             priority
           />
-          <h1 className="text-2xl font-semibold">Bem-vindo ao KAIROS</h1>
+          <h1 className="text-2xl font-semibold">Vamos começar a controlar seus gastos</h1>
           <p className="text-sm text-muted-foreground">
             Para cuidar bem das suas finanças, preciso te conhecer um pouco.
             São poucas perguntas, leva cerca de 2 minutos: quanto você ganha,
             quanto tem hoje e quais contas se repetem todo mês. Depois eu monto o
             seu mês e aviso quando ele estiver saudável, em atenção ou em risco.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Só quer usar a rotina por enquanto? Sem problema: você pode voltar
+            ao início e responder isto quando quiser.
           </p>
         </div>
       )}
@@ -393,7 +398,9 @@ export function InterviewWizard({
             <ArrowLeftIcon /> Voltar
           </Button>
         ) : (
-          <span />
+          <Link href="/" className={buttonVariants({ variant: "ghost" })}>
+            Agora não
+          </Link>
         )}
 
         {isLast ? (

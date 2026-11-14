@@ -52,8 +52,8 @@ export default async function RegistrarPage() {
 
       {accounts.length === 0 && (
         <p className="rounded-lg border border-border bg-card px-3 py-2 text-sm">
-          Para lançar gastos e receitas, crie uma conta primeiro (e informe o
-          saldo inicial) na aba Contas. Tarefas, lembretes e notas já funcionam.
+          Para lançar gastos e receitas, configure primeiro as suas finanças
+          (aba Finanças). Tarefas, lembretes e notas já funcionam por aqui.
         </p>
       )}
 
