@@ -89,7 +89,7 @@ function RecurrenceForm({
   const typedCategories = categories.filter((c) => c.type === kind);
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       {recurrence && <input type="hidden" name="id" value={recurrence.id} />}
       <input type="hidden" name="kind" value={kind} />
 

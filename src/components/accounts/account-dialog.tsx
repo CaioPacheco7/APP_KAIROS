@@ -79,7 +79,7 @@ function AccountForm({
   );
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       {account && <input type="hidden" name="id" value={account.id} />}
 
       <Field label="Nome" htmlFor="acc-name" error={fieldError("name")}>

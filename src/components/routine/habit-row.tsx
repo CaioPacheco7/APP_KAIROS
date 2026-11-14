@@ -13,7 +13,7 @@ const DOT_LABEL = {
   open: "hoje, em aberto",
 } as const;
 
-/** Uma linha do checklist de hábitos: checkbox, sequência e últimos 7 dias. */
+/** Uma linha do checklist de hábitos: checkbox grande, sequência e últimos 7 dias. */
 export function HabitRow({
   habit,
   today,
@@ -26,7 +26,7 @@ export function HabitRow({
   const { doneToday, scheduledToday } = habit;
 
   return (
-    <li className="flex items-center gap-3 py-3">
+    <li className="group/habit flex items-center gap-4 py-3.5">
       <form action={toggleHabitAction}>
         <input type="hidden" name="habit_id" value={habit.id} />
         <input type="hidden" name="date" value={today} />
@@ -36,25 +36,26 @@ export function HabitRow({
           aria-label={doneToday ? `Desmarcar ${habit.name}` : `Marcar ${habit.name} como feito`}
           aria-pressed={doneToday}
           className={cn(
-            "flex size-6 items-center justify-center rounded-md border border-input transition-colors hover:border-ring",
-            doneToday && "border-primary bg-primary text-primary-foreground",
+            "grid size-9 place-items-center rounded-full border-2 transition-all duration-200 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40",
+            doneToday
+              ? "border-gold-fill bg-gold-fill text-[#1f1707] shadow-[0_6px_16px_-6px_var(--gold-fill)]"
+              : "border-input hover:border-gold-fill hover:bg-gold-soft",
           )}
         >
-          {doneToday && <CheckIcon className="size-4" />}
+          {doneToday && <CheckIcon className="size-5" strokeWidth={3} />}
         </button>
       </form>
 
       <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-sm", doneToday && "text-muted-foreground line-through")}>
+        <p className={cn("truncate text-[0.9375rem] font-medium", doneToday && "text-muted-foreground line-through decoration-muted-foreground/50")}>
           {habit.name}
         </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <FlameIcon className="size-3.5" aria-hidden />
-            {habit.streak} {habit.streak === 1 ? "dia" : "dias"} seguidos
-          </span>
-
-          <span className="flex items-center gap-1" role="img" aria-label={`Últimos 7 dias: ${habit.days.map((d) => `${DOT_LABEL[d.status]}`).join(", ")}`}>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span
+            className="flex items-center gap-1.5"
+            role="img"
+            aria-label={`Últimos 7 dias: ${habit.days.map((d) => DOT_LABEL[d.status]).join(", ")}`}
+          >
             {habit.days.map((d) => (
               <span
                 key={d.date}
@@ -62,15 +63,14 @@ export function HabitRow({
                 title={`${d.date.slice(8, 10)}/${d.date.slice(5, 7)} · ${DOT_LABEL[d.status]}`}
                 className={cn(
                   "size-2.5 rounded-full",
-                  d.status === "done" && "bg-primary",
-                  d.status === "missed" && "bg-muted-foreground/40",
-                  d.status === "open" && "border border-primary",
+                  d.status === "done" && "bg-gold-fill",
+                  d.status === "missed" && "bg-muted-foreground/30",
+                  d.status === "open" && "ring-[1.5px] ring-gold-fill ring-inset",
                   d.status === "off" && "border border-dashed border-border",
                 )}
               />
             ))}
           </span>
-
           {habit.weekdays.length < 7 && (
             <span>{habit.weekdays.map((w) => WEEKDAY_SHORT[w - 1]).join(", ")}</span>
           )}
@@ -78,8 +78,18 @@ export function HabitRow({
         </div>
       </div>
 
+      {habit.streak > 0 && (
+        <span
+          className="hidden shrink-0 items-center gap-1 rounded-full bg-gold-soft px-2.5 py-1 text-xs font-medium text-gold sm:flex"
+          title={`${habit.streak} ${habit.streak === 1 ? "dia" : "dias"} seguidos`}
+        >
+          <FlameIcon className="size-3.5" aria-hidden />
+          {habit.streak} {habit.streak === 1 ? "dia" : "dias"}
+        </span>
+      )}
+
       {manage && (
-        <div className="flex items-center">
+        <div className="flex shrink-0 items-center transition-opacity md:opacity-0 md:group-focus-within/habit:opacity-100 md:group-hover/habit:opacity-100">
           <HabitEditDialog habit={{ id: habit.id, name: habit.name, weekdays: habit.weekdays }} />
           <form action={archiveHabitAction}>
             <input type="hidden" name="id" value={habit.id} />
@@ -87,6 +97,7 @@ export function HabitRow({
               message={`Arquivar "${habit.name}"? Ele some da lista, mas o histórico é mantido.`}
               variant="ghost"
               size="sm"
+              className="text-muted-foreground"
             >
               Arquivar
             </ConfirmButton>

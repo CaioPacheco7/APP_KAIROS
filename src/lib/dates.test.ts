@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   currentMonth,
+  greetingForHour,
+  hourInSaoPaulo,
   isISODate,
   lastMonths,
   monthBounds,
@@ -69,5 +71,20 @@ describe("isISODate", () => {
     expect(isISODate("2026-02-29")).toBe(false);
     expect(isISODate("2026-13-01")).toBe(false);
     expect(isISODate("13/11/2026")).toBe(false);
+  });
+});
+
+describe("saudação por horário (São Paulo)", () => {
+  it("hora em São Paulo, não em UTC", () => {
+    // 2026-11-14 02:00 UTC = 23:00 em São Paulo
+    expect(hourInSaoPaulo(new Date("2026-11-14T02:00:00Z"))).toBe(23);
+    expect(hourInSaoPaulo(new Date("2026-11-14T12:30:00Z"))).toBe(9);
+    expect(hourInSaoPaulo(new Date("2026-11-14T03:00:00Z"))).toBe(0); // meia-noite, não "24"
+  });
+  it.each([
+    [0, "Boa noite"], [4, "Boa noite"], [5, "Bom dia"], [11, "Bom dia"],
+    [12, "Boa tarde"], [17, "Boa tarde"], [18, "Boa noite"], [23, "Boa noite"],
+  ])("%ih -> %s", (hour, expected) => {
+    expect(greetingForHour(hour)).toBe(expected);
   });
 });

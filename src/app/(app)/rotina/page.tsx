@@ -6,7 +6,12 @@ import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
 import { TaskComposer } from "@/components/routine/task-composer";
 import { TaskItem, type TaskRow } from "@/components/routine/task-item";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SparklesIcon } from "lucide-react";
+import { EmptyState } from "@/components/app/empty-state";
+import { PageHeader } from "@/components/app/page-header";
+import { ProgressRing } from "@/components/app/progress-ring";
+import { Hourglass } from "@/components/brand/hourglass";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLongDate } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -36,20 +41,18 @@ export default async function RotinaPage({
   const { today } = await getFormOptions();
 
   return (
-    <div className="grid gap-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Rotina</h1>
-          <p className="text-sm text-muted-foreground">
-            Hábitos do dia, tarefas, lembretes e anotações.
-          </p>
-        </div>
-        {tab === "notas" && <NoteDialog />}
-      </header>
+    <div className="grid grid-cols-1 gap-8">
+      <PageHeader
+        eyebrow="Rotina"
+        title="Seu dia, em ordem"
+        description="Hábitos para marcar todo dia, tarefas, lembretes e o seu bloco de notas."
+        actions={tab === "notas" ? <NoteDialog /> : undefined}
+      />
 
       <nav
         aria-label="Seções da rotina"
-        className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-full border border-border bg-card/60 p-1"
+        className="no-scrollbar animate-rise flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-full border border-border bg-card/70 p-1 shadow-xs backdrop-blur"
+        style={{ "--d": "60ms" } as React.CSSProperties}
       >
         {TABS.map((t) => (
           <Link
@@ -57,10 +60,10 @@ export default async function RotinaPage({
             href={`/rotina?aba=${t.id}`}
             aria-current={tab === t.id ? "page" : undefined}
             className={cn(
-              "shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors",
+              "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors",
               tab === t.id
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {t.label}
@@ -104,45 +107,43 @@ async function Today({ today }: { today: string }) {
   const longDate = formatLongDate(today);
 
   return (
-    <div className="grid gap-4">
-      <Card>
-        <CardContent className="grid gap-2">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-lg font-medium first-letter:uppercase">{longDate}</h2>
-            <span className="text-sm text-muted-foreground tabular-nums">
+    <div className="grid grid-cols-1 gap-6">
+      {/* Resumo do dia */}
+      <Card className="animate-rise relative" style={{ "--d": "100ms" } as React.CSSProperties}>
+        <Hourglass className="pointer-events-none absolute -right-4 -bottom-8 h-48 text-gold-fill opacity-[0.06]" />
+        <CardContent className="relative flex flex-wrap items-center gap-6">
+          <ProgressRing value={done} max={Math.max(total, 1)} size={104} stroke={9} label="Hábitos feitos hoje">
+            <span className="font-display text-4xl leading-none tabular-nums">
+              {done}
+              <span className="text-xl text-muted-foreground">/{total}</span>
+            </span>
+          </ProgressRing>
+          <div className="min-w-0">
+            <p className="eyebrow mb-2.5">Hoje</p>
+            <h2 className="font-display text-3xl leading-tight tracking-tight first-letter:uppercase sm:text-4xl">{longDate}</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground tabular-nums">
               {total === 0
                 ? "Nenhum hábito para hoje"
                 : done === total
-                  ? `Tudo feito por hoje (${done} de ${total})`
-                  : `${done} de ${total} hábitos feitos`}
-            </span>
+                  ? "Tudo feito por hoje. Bom trabalho!"
+                  : `${total - done} ${total - done === 1 ? "hábito falta" : "hábitos faltam"} (${pct}% concluído)`}
+            </p>
           </div>
-          {total > 0 && (
-            <div
-              className="h-2 rounded-full bg-muted"
-              role="progressbar"
-              aria-valuenow={pct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Hábitos feitos hoje"
-            >
-              <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(pct, done > 0 ? 3 : 0)}%` }} />
-            </div>
-          )}
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="animate-rise" style={{ "--d": "160ms" } as React.CSSProperties}>
         <CardHeader>
           <CardTitle>Hábitos de hoje</CardTitle>
+          <CardDescription>Toque no círculo para marcar como feito</CardDescription>
         </CardHeader>
         <CardContent>
           {scheduled.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
+            <EmptyState icon={SparklesIcon} tone="sage" title={board.length === 0 ? "Comece pelo primeiro hábito" : "Dia livre"} className="border-0 py-8">
               {board.length === 0
-                ? "Você ainda não tem hábitos. Adicione o primeiro abaixo, como “Tomar creatina”."
+                ? "Adicione algo que você quer fazer todo dia, como “Tomar creatina” ou “Beber 2 litros de água”."
                 : "Nenhum hábito previsto para hoje."}
-            </p>
+            </EmptyState>
           ) : (
             <ul className="divide-y divide-border">
               {scheduled.map((h) => (
@@ -154,11 +155,11 @@ async function Today({ today }: { today: string }) {
       </Card>
 
       {others.length > 0 && (
-        <details>
-          <summary className="cursor-pointer text-sm text-muted-foreground select-none">
+        <details className="group">
+          <summary className="cursor-pointer text-sm text-muted-foreground select-none hover:text-foreground">
             Fora da agenda de hoje ({others.length})
           </summary>
-          <Card className="mt-2">
+          <Card className="mt-3">
             <CardContent>
               <ul className="divide-y divide-border">
                 {others.map((h) => (
@@ -173,9 +174,10 @@ async function Today({ today }: { today: string }) {
       <HabitComposer />
 
       {tasks.length > 0 && (
-        <Card>
+        <Card className="animate-rise">
           <CardHeader>
             <CardTitle>Tarefas e lembretes para hoje</CardTitle>
+            <CardDescription>O que vence hoje ou já passou do prazo</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="divide-y divide-border">
@@ -218,7 +220,7 @@ async function Tasks({ kind, today }: { kind: "task" | "reminder"; today: string
   const done = (doneRes.data ?? []) as TaskRow[];
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <TaskComposer kind={kind} today={today} />
 
       <Card>
@@ -275,7 +277,7 @@ async function Notes() {
   if (notes.length === 0) {
     return (
       <Card>
-        <CardContent className="grid gap-1 py-10 text-center">
+        <CardContent className="grid grid-cols-1 gap-1 py-10 text-center">
           <p className="font-medium">Nenhuma nota ainda</p>
           <p className="text-sm text-muted-foreground">
             Crie uma pelo botão Nova nota, ou escreva “anotar: …” na aba Registrar.
@@ -286,7 +288,7 @@ async function Notes() {
   }
 
   return (
-    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {notes.map((note) => (
         <li key={note.id}>
           <NoteCard note={note} />

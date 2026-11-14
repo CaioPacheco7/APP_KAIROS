@@ -44,3 +44,5 @@ Abra <http://localhost:3000>.
   - Um `<Suspense>` só em layout compartilhado não basta para a navegação entre páginas.
 - Dinheiro, datas e o interpretador do chat são funções puras com testes (`npm test`).
 - Navegação no topo (sem menu lateral); o layout do app está em `src/app/(app)/layout.tsx`.
+- Visual: dois temas (claro e noturno), tipografia serifada nos destaques e fotos nos setores. Guia em [docs/DESIGN.md](docs/DESIGN.md); créditos das fotos em `public/photos/CREDITS.md`.
+- Páginas usam `grid grid-cols-1` na raiz (evita rolagem horizontal no celular).

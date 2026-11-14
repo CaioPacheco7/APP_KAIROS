@@ -50,7 +50,7 @@ function EditForm({ habit, onDone }: { habit: HabitValues; onDone: () => void })
   });
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       <input type="hidden" name="id" value={habit.id} />
       <Field label="Nome" htmlFor="he-name" error={fieldError("name")}>
         <Input id="he-name" name="name" defaultValue={habit.name} autoFocus autoComplete="off" maxLength={80} />

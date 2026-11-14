@@ -105,32 +105,33 @@ Regra de arquitetura: **Dashboard e Relatórios só leem**; nunca escrevem em ou
 
 ## 5. Mapa de navegação
 
-```
-/ (landing, opcional)
-/entrar · /cadastro · /recuperar-senha
-/onboarding
+Estrutura atual (decisão de 14/11/2026): o app abre no **Início**, com os setores; **Finanças** é um módulo opcional
+(só quem entra nele passa pela entrevista).
 
-/app
-├── /dashboard                  Resumo geral
-├── /financas
-│   ├── /visao-geral            Dashboard financeiro
-│   ├── /transacoes             Lista + filtros + nova transação
-│   ├── /contas                 Lista de contas, extrato por conta
-│   ├── /cartoes                Cartões → /[id]/faturas
-│   ├── /orcamento              Orçamento por categoria
-│   ├── /recorrencias
-│   ├── /investimentos
-│   └── /categorias
-├── /rotina
-│   ├── /tarefas
-│   ├── /calendario
-│   └── /habitos
-├── /objetivos                  Lista → /[id] detalhe e contribuições
-├── /relatorios                 Por período, categoria, conta; exportar
-└── /configuracoes              Perfil, preferências, dados
+```
+/entrar                          Login com Google
+/entrevista                      Entrevista de Finanças (só na primeira vez, ao entrar em Finanças)
+
+/ (Início)                       Saudação, atalhos, setores: Finanças · Rotina · Bloco de notas
+/registrar                       Chat de registro rápido (gastos, tarefas, lembretes, notas)
+
+Finanças  (/financas → /dashboard)
+├── /dashboard                   Visão geral: saldo, semáforo, resumo do mês, gráficos
+├── /mes                         Meu mês: entradas, contas do mês (Paguei/Recebi), contas fixas
+├── /transacoes                  Movimentações por dia, com filtros
+├── /contas                      Contas e saldos
+└── /planejar                    Planos
+    ├── /conquista               Simulador: conquistar algo
+    └── /divida                  Simulador: sair de uma dívida
+
+/rotina                          Abas: Hoje (hábitos) · Tarefas · Lembretes · Notas
 ```
 
-**Navegação:** sidebar fixa no desktop; barra inferior com 4–5 itens no celular. Botão global **"+ Novo"** (transação, tarefa, hábito) acessível de qualquer tela, porque o registro rápido é o que mantém o app vivo.
+**Navegação:** barra principal no topo (Início, Finanças, Rotina, Registrar), com as abas de Finanças logo abaixo
+quando se está nesse módulo; no celular, barra flutuante embaixo. Botão **"+ Novo"** (transação) dentro de Finanças.
+Alternância de **tema claro/noturno** no cabeçalho. Visual detalhado em `DESIGN.md`.
+
+Ainda por vir: cartões, orçamento por categoria, relatórios, configurações.
 
 ---
 

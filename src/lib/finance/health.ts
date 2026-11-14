@@ -41,6 +41,9 @@ export type Health = {
   perDay: number | null;
   /** gasto projetado até o fim do mês no ritmo atual (só mês atual) */
   projected: number | null;
+  /** limites usados (em % da renda), para desenhar as zonas do semáforo */
+  greenMax: number;
+  yellowMax: number;
   message: string;
 };
 
@@ -87,6 +90,8 @@ export function assessHealth(input: HealthInput): Health {
       remaining,
       perDay: null,
       projected: null,
+      greenMax,
+      yellowMax,
       message:
         "Cadastre a renda do mês para eu avaliar como estão as suas finanças.",
     };
@@ -125,7 +130,7 @@ export function assessHealth(input: HealthInput): Health {
       (perDay ? `, cerca de ${formatBRL(perDay)} por dia.` : ".");
   } else if (level === "yellow") {
     message =
-      `Atenção: ${pct} da renda já está comprometida. Sobram ${formatBRL(remaining)} ` +
+      `${pct} da renda já está comprometida. Sobram ${formatBRL(remaining)} ` +
       `para o resto do mês` +
       (perDay ? ` (cerca de ${formatBRL(perDay)} por dia).` : ".");
   } else {
@@ -140,5 +145,5 @@ export function assessHealth(input: HealthInput): Health {
       `acima da renda de ${formatBRL(income)}.`;
   }
 
-  return { level, label: LABEL[level], ratio, remaining, perDay, projected, message };
+  return { level, label: LABEL[level], ratio, remaining, perDay, projected, greenMax, yellowMax, message };
 }

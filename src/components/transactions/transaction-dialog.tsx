@@ -103,7 +103,7 @@ function TransactionForm({
   const typedCategories = categories.filter((c) => c.type === type);
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       {transaction && <input type="hidden" name="id" value={transaction.id} />}
       <input type="hidden" name="type" value={type} />
 
@@ -144,13 +144,13 @@ function TransactionForm({
             id="tx-date"
             name="date"
             type="date"
-            className="[color-scheme:dark]"
+            
             defaultValue={transaction?.date ?? today}
           />
         </Field>
       </div>
 
-      <div className={cn("grid gap-3", isTransfer && "grid-cols-2")}>
+      <div className={cn("grid grid-cols-1 gap-3", isTransfer && "grid-cols-2")}>
         <Field
           label={isTransfer ? "Conta de origem" : "Conta"}
           htmlFor="tx-account"

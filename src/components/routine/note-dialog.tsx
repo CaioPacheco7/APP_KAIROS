@@ -60,7 +60,7 @@ function NoteForm({ note, onDone }: { note?: NoteValues; onDone: () => void }) {
   );
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       {note && <input type="hidden" name="id" value={note.id} />}
       <Field label="Título (opcional)" htmlFor="note-title" error={fieldError("title")}>
         <Input
