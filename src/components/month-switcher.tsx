@@ -31,7 +31,7 @@ export function MonthSwitcher({
       >
         <ChevronLeftIcon />
       </Link>
-      <span className="min-w-40 text-center text-sm font-medium capitalize">
+      <span className="min-w-40 text-center text-sm font-medium first-letter:uppercase">
         {monthLabel(month)}
       </span>
       <Link

@@ -173,7 +173,13 @@ export default async function DashboardPage({
         <StatTile
           label="Resultado do mês"
           value={`${income - expense >= 0 ? "+ " : "− "}${formatBRL(Math.abs(income - expense))}`}
-          note={income - expense >= 0 ? "Sobrou no mês" : "Gastou mais do que entrou"}
+          note={
+            income === 0 && expense === 0
+              ? "Ainda sem movimento pago"
+              : income - expense >= 0
+                ? "Sobrou no mês"
+                : "Gastou mais do que entrou"
+          }
         />
       </div>
 
@@ -221,6 +227,7 @@ export default async function DashboardPage({
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatDateBR(t.date)} · {accountNames.get(t.account_id) ?? "Conta"}
+                        {t.status === "pending" ? " · agendada" : ""}
                       </p>
                     </div>
                     <span className="shrink-0 font-medium tabular-nums">
