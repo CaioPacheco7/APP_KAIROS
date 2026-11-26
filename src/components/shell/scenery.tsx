@@ -51,7 +51,7 @@ export function Scenery() {
           loading="eager"
           fetchPriority={index === 0 ? "high" : "auto"}
           onLoad={() => markLoaded(layer.scene)}
-          className="object-cover transition-opacity duration-700 ease-out [filter:sepia(.22)_saturate(.78)_brightness(var(--bright-light))] dark:[filter:sepia(.15)_saturate(.75)_brightness(var(--bright-dark))]"
+          className="object-cover transition-opacity duration-700 ease-out [filter:sepia(.22)_saturate(.78)_brightness(var(--bright-light))] dark:[filter:grayscale(1)_brightness(var(--bright-dark))_contrast(1.05)]"
           style={
             {
               objectPosition: SCENES[layer.scene].position,
@@ -62,8 +62,8 @@ export function Scenery() {
           }
         />
       ))}
-      {/* véu quente: dá profundidade e segura o contraste do vidro */}
-      <div className="absolute inset-0 bg-[linear-gradient(116deg,rgb(73_48_37/35%),transparent_43%,rgb(162_101_63/24%)_76%,transparent_100%),linear-gradient(0deg,rgb(53_33_25/34%),transparent_58%)]" />
+      {/* véu: quente no claro; preto neutro no noturno (o noturno é preto de verdade) */}
+      <div className="absolute inset-0 bg-[linear-gradient(116deg,rgb(73_48_37/35%),transparent_43%,rgb(162_101_63/24%)_76%,transparent_100%),linear-gradient(0deg,rgb(53_33_25/34%),transparent_58%)] dark:bg-[linear-gradient(116deg,rgb(0_0_0/55%),rgb(0_0_0/25%)_45%,rgb(0_0_0/50%)_100%),linear-gradient(0deg,rgb(0_0_0/55%),transparent_60%)]" />
     </div>
   );
 }

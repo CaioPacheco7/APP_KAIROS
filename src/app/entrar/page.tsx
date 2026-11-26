@@ -41,9 +41,9 @@ export default function EntrarPage({
         loading="eager"
         fetchPriority="high"
         sizes="100vw"
-        className="-z-20 object-cover [filter:sepia(.22)_saturate(.78)_brightness(.9)] dark:[filter:sepia(.15)_saturate(.75)_brightness(.62)]"
+        className="-z-20 object-cover [filter:sepia(.22)_saturate(.78)_brightness(.9)] dark:[filter:grayscale(1)_brightness(.5)_contrast(1.05)]"
       />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(30_20_14/72%),rgb(30_20_14/38%)_45%,transparent_80%),linear-gradient(0deg,rgb(30_20_14/45%),transparent_55%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(30_20_14/72%),rgb(30_20_14/38%)_45%,transparent_80%),linear-gradient(0deg,rgb(30_20_14/45%),transparent_55%)] dark:bg-[linear-gradient(100deg,rgb(0_0_0/78%),rgb(0_0_0/45%)_45%,rgb(0_0_0/20%)_80%),linear-gradient(0deg,rgb(0_0_0/55%),transparent_55%)]" />
       <Hourglass className="pointer-events-none absolute bottom-8 left-[38%] -z-10 hidden h-[26rem] text-white opacity-[0.06] lg:block" />
 
       <div className="mx-auto grid min-h-screen w-full max-w-[1380px] content-center gap-8 px-4 py-8 md:w-[calc(100%-74px)] md:px-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,440px)] lg:items-center lg:gap-14">

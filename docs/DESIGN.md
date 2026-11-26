@@ -12,7 +12,8 @@ as peças reutilizáveis, em `src/components/`. O estilo nasceu de um painel de 
    Finanças nas montanhas, Rotina no quarto claro).
 3. **Um número em destaque por tela.** O resto apoia (indicadores, gráficos finos, listas).
 4. **Nunca só cor.** Status sempre com ícone + texto (semáforo, atrasado, vence hoje, variação).
-5. **Dois temas de verdade.** Claro e noturno, seguindo o sistema; a escolha fica no navegador.
+5. **Dois temas de verdade.** Claro (vidro de leite quente) e noturno (**vidro negro: preto de verdade, nunca
+   marrom**; o calor fica só no dourado da marca). Segue o sistema; a escolha fica no navegador.
 6. **Acessível por padrão.** Quem pede menos transparência ou mais contraste no sistema recebe
    superfícies sólidas, sem desfoque. "Reduzir movimento" desliga as animações.
 
@@ -35,12 +36,13 @@ O mapa de módulos, abas, cenas e destinos da busca é puro e testado: `lib/navi
 
 | Módulo | Arquivo | Brilho (claro / noturno) |
 |---|---|---|
-| Início, Registrar | `public/photos/cena-casa.jpg` | 0,86 / 0,60 |
-| Finanças | `public/photos/login-montanhas.jpg` | 1,04 / 0,66 |
-| Rotina | `public/photos/cena-rotina.jpg` | 0,90 / 0,58 |
+| Início, Registrar | `public/photos/cena-casa.jpg` | 0,86 / 0,42 |
+| Finanças | `public/photos/login-montanhas.jpg` | 1,04 / 0,55 |
+| Rotina | `public/photos/cena-rotina.jpg` | 0,90 / 0,42 |
 
-Filtro: `sepia(.22) saturate(.78)` no claro e `sepia(.15) saturate(.75)` no noturno, mais um véu
-quente em degradê. Fotos escuras ganham mais brilho no tema claro para o vidro manter o contraste.
+Filtro: no claro, `sepia(.22) saturate(.78)` e um véu quente em degradê; fotos escuras ganham mais brilho
+para o vidro manter o contraste. No noturno, a foto fica em **preto e branco** (`grayscale(1)`), bem escura,
+sob um véu preto: só dá profundidade, sem tingir a tela de marrom.
 Créditos em `public/photos/CREDITS.md`.
 
 ## Cores
@@ -52,9 +54,11 @@ docas, com desfoque próprio), `glass-stage` (palco), `glass-inner` (poços: cam
 
 | Papel | Claro | Noturno | Uso |
 |---|---|---|---|
-| texto | `#25201E` | `#FFF6E9` | texto principal |
-| texto de apoio | `#423731` | `#DCCAB9` | rótulos, descrições (≥ 7:1 no vidro) |
-| ação principal | `#261E1B` | `#F3DDCA` | botões escuros/marfim |
+| fundo / painéis | `#AB8E76` + vidro creme | `#060606` + vidro preto (`rgb(19 19 19 / 76%)`) | base, palco, cartões |
+| texto | `#25201E` | `#F4F0E8` | texto principal (16:1 no preto) |
+| texto de apoio | `#423731` | `#ACA69D` | rótulos, descrições (≥ 7:1 no vidro) |
+| ação principal | `#261E1B` | `#F1ECE2` | botões escuros/marfim |
+| foco | `#194B48` | `#D6B878` (dourado) | anel de foco do teclado |
 | status bom / atenção / risco | `#09644F` / `#7A4F00` / `#A43C27` | `#75DAC0` / `#F1BE58` / `#FF9177` | semáforo, variações, atrasos (sempre com ícone e texto) |
 | dourado (marca) | `#6B5016` (texto) · `#8A6A28` (marcas) | `#D6B878` | hábitos, progresso, destaques |
 | Entradas / Saídas | `#2F6DB8` / `#B9532F` | `#5B94DD` / `#DD7A50` | séries dos gráficos |

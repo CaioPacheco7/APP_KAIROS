@@ -10,13 +10,14 @@ export type ModuleId = "inicio" | "financas" | "rotina" | "registrar";
 export type SceneId = "casa" | "horizonte" | "rotina";
 
 /**
- * `bright`: brilho da foto em cada tema. As fotos mais escuras (montanhas)
- * ganham mais luz no claro, para o vidro manter o contraste do texto.
+ * `bright`: brilho da foto em cada tema. No claro, as fotos mais escuras
+ * (montanhas) ganham mais luz para o vidro manter o contraste do texto. No
+ * noturno a foto fica em preto e branco e bem escura: o tema é preto de verdade.
  */
 export const SCENES: Record<SceneId, { src: string; position: string; bright: { light: number; dark: number } }> = {
-  casa: { src: "/photos/cena-casa.jpg", position: "center 62%", bright: { light: 0.86, dark: 0.6 } },
-  horizonte: { src: "/photos/login-montanhas.jpg", position: "center 40%", bright: { light: 1.04, dark: 0.66 } },
-  rotina: { src: "/photos/cena-rotina.jpg", position: "center 58%", bright: { light: 0.9, dark: 0.58 } },
+  casa: { src: "/photos/cena-casa.jpg", position: "center 62%", bright: { light: 0.86, dark: 0.42 } },
+  horizonte: { src: "/photos/login-montanhas.jpg", position: "center 40%", bright: { light: 1.04, dark: 0.55 } },
+  rotina: { src: "/photos/cena-rotina.jpg", position: "center 58%", bright: { light: 0.9, dark: 0.42 } },
 };
 
 export type ModuleDef = {

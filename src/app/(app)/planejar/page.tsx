@@ -58,7 +58,7 @@ export default async function PlanejarPage() {
             fill
             loading="eager"
             sizes="(min-width: 1152px) 1152px, 100vw"
-            className="object-cover [filter:sepia(.22)_saturate(.78)_brightness(.9)]"
+            className="object-cover [filter:sepia(.22)_saturate(.78)_brightness(.9)] dark:[filter:grayscale(.55)_brightness(.6)]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/10" />
           <div className="relative max-w-2xl px-6 pt-10 pb-28 text-white sm:px-10 sm:pt-14 sm:pb-32">

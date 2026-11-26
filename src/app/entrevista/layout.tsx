@@ -23,9 +23,9 @@ export default function EntrevistaLayout({ children }: { children: React.ReactNo
         loading="eager"
         fetchPriority="high"
         sizes="100vw"
-        className="-z-20 object-cover [filter:sepia(.22)_saturate(.78)_brightness(1)] dark:[filter:sepia(.15)_saturate(.75)_brightness(.62)]"
+        className="-z-20 object-cover [filter:sepia(.22)_saturate(.78)_brightness(1)] dark:[filter:grayscale(1)_brightness(.5)_contrast(1.05)]"
       />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(30_20_14/70%),rgb(30_20_14/34%)_42%,transparent_78%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(30_20_14/70%),rgb(30_20_14/34%)_42%,transparent_78%)] dark:bg-[linear-gradient(100deg,rgb(0_0_0/76%),rgb(0_0_0/42%)_42%,rgb(0_0_0/20%)_78%)]" />
 
       <div className="mx-auto grid min-h-screen w-full max-w-[1380px] content-center gap-8 px-3 py-6 md:w-[calc(100%-74px)] md:px-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12">
         {/* O que você ganha */}

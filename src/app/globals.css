@@ -170,41 +170,42 @@
 }
 
 /* ---------------------------------------------------------------------
-   Tema noturno: vidro fumê quente
+   Tema noturno: vidro NEGRO (preto neutro, sem marrom). O calor fica só no
+   dourado da marca; o resto é preto, grafite e marfim (a paleta da logo).
    --------------------------------------------------------------------- */
 .dark {
   color-scheme: dark;
 
-  --glass-base: #40322b;
-  --glass-rim: rgb(255 236 212 / 26%);
-  --glass-edge-light: rgb(255 242 225 / 42%);
-  --glass-edge-shade: rgb(11 6 5 / 30%);
-  --glass-gloss: rgb(255 237 213 / 11%);
-  --glass-frame: rgb(38 28 26 / 58%);
-  --glass-rail: rgb(43 32 30 / 68%);
-  --glass-card: rgb(46 35 33 / 66%);
-  --glass-card-light: rgb(106 88 81 / 24%);
-  --glass-raised: rgb(82 68 62 / 86%);
-  --glass-inner: rgb(78 61 56 / 48%);
-  --glass-surface: #3b302c;
-  --glass-track: rgb(245 226 212 / 15%);
-  --glass-line: rgb(243 221 198 / 16%);
-  --glass-shadow: 10 4 3;
-  --pick: #f9eee0;
-  --pick-ink: #241b17;
+  --glass-base: #060606;
+  --glass-rim: rgb(255 255 255 / 11%);
+  --glass-edge-light: rgb(255 255 255 / 18%);
+  --glass-edge-shade: rgb(0 0 0 / 55%);
+  --glass-gloss: rgb(255 255 255 / 5%);
+  --glass-frame: rgb(8 8 8 / 66%);
+  --glass-rail: rgb(12 12 12 / 74%);
+  --glass-card: rgb(19 19 19 / 76%);
+  --glass-card-light: rgb(255 255 255 / 3.5%);
+  --glass-raised: rgb(40 40 40 / 88%);
+  --glass-inner: rgb(255 255 255 / 5%);
+  --glass-surface: #121212;
+  --glass-track: rgb(255 255 255 / 10%);
+  --glass-line: rgb(255 255 255 / 9%);
+  --glass-shadow: 0 0 0;
+  --pick: #f4f0e8;
+  --pick-ink: #0a0a0a;
 
-  --foreground: #fff6e9;
-  --card-foreground: #fff6e9;
-  --popover-foreground: #fff6e9;
-  --primary: #f3ddca;
-  --primary-foreground: #231a16;
-  --secondary-foreground: #fff6e9;
-  --muted-foreground: #dccab9;
-  --accent: rgb(96 80 73 / 62%);
-  --accent-foreground: #fff6e9;
+  --foreground: #f4f0e8;
+  --card-foreground: #f4f0e8;
+  --popover-foreground: #f4f0e8;
+  --primary: #f1ece2;
+  --primary-foreground: #0b0b0b;
+  --secondary-foreground: #f4f0e8;
+  --muted-foreground: #aca69d;
+  --accent: rgb(255 255 255 / 9%);
+  --accent-foreground: #f4f0e8;
   --destructive: #ff9177;
-  --input: rgb(243 221 198 / 24%);
-  --ring: #f9bf9b;
+  --input: rgb(255 255 255 / 16%);
+  --ring: #d6b878;
 
   --status-good: #75dac0;
   --status-warning: #f1be58;
@@ -448,12 +449,12 @@
     --glass-inner: #f1e6da;
   }
   .dark {
-    --glass-frame: #2a201d;
-    --glass-rail: #2e2421;
-    --glass-card: #342a26;
+    --glass-frame: #0b0b0b;
+    --glass-rail: #111111;
+    --glass-card: #171717;
     --glass-card-light: transparent;
-    --glass-raised: #4a3d37;
-    --glass-inner: #3d322e;
+    --glass-raised: #2a2a2a;
+    --glass-inner: #1f1f1f;
   }
   .glass-rail,
   .glass-stage {
