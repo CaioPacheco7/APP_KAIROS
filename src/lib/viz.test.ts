@@ -1,5 +1,40 @@
 import { describe, expect, it } from "vitest";
-import { deltaTone, formatPct, niceScale, pctChange, smoothPath, tickLabel } from "./viz";
+import {
+  ACCOUNT_SLOTS,
+  accountColor,
+  deltaTone,
+  formatPct,
+  niceScale,
+  pctChange,
+  smoothPath,
+  splitShares,
+  tickLabel,
+} from "./viz";
+
+describe("cores e divisão das contas", () => {
+  it("as primeiras contas têm cor própria; as demais, a cor de 'Outras'", () => {
+    expect(accountColor(0)).toBe("var(--series-acc-1)");
+    expect(accountColor(ACCOUNT_SLOTS - 1)).toBe(`var(--series-acc-${ACCOUNT_SLOTS})`);
+    expect(accountColor(ACCOUNT_SLOTS)).toBe("var(--series-acc-other)");
+    expect(accountColor(9)).toBe("var(--series-acc-other)");
+  });
+
+  it("a barra só usa saldos positivos e soma o excesso em 'Outras'", () => {
+    const items = [10, -5, 20, 0, 30, 40, 50].map((value, i) => ({
+      key: String(i),
+      label: `Conta ${i}`,
+      value,
+      color: accountColor(i),
+    }));
+    const shares = splitShares(items);
+    expect(shares.map((s) => s.value)).toEqual([10, 20, 30, 40, 50]);
+    expect(splitShares([...items, { key: "x", label: "X", value: 5, color: "c" }]).at(-1)).toMatchObject({
+      key: "outras",
+      label: "Outras",
+      value: 55,
+    });
+  });
+});
 
 describe("niceScale: marcas redondas no eixo", () => {
   it("R$ 3.900 vira um eixo até R$ 4.000 de mil em mil", () => {

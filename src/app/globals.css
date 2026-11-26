@@ -138,6 +138,13 @@
   --series-out-fixed: #8f3f22;
   --series-out-daily: #c9623a;
   --series-habit: #8a6a28;
+  /* identidade das contas (barra de divisão do saldo); validadas lado a lado:
+     terracota e dourado nunca ficam vizinhos (se confundem para daltônicos) */
+  --series-acc-1: #2f6db8;
+  --series-acc-2: #b9532f;
+  --series-acc-3: #6a4ce2;
+  --series-acc-4: #9a7428;
+  --series-acc-other: #8a7f76;
   --viz-grid: rgb(74 49 33 / 13%);
   --viz-axis: rgb(74 49 33 / 30%);
   --chart-1: var(--series-in);
@@ -208,6 +215,11 @@
   --series-out-fixed: #b85a35;
   --series-out-daily: #e89a74;
   --series-habit: #d6b878;
+  --series-acc-1: #5b94dd;
+  --series-acc-2: #dd7a50;
+  --series-acc-3: #9887ef;
+  --series-acc-4: #bd923f;
+  --series-acc-other: #8c8078;
   --viz-grid: rgb(243 221 198 / 13%);
   --viz-axis: rgb(243 221 198 / 30%);
 

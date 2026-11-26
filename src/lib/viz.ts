@@ -60,6 +60,31 @@ export function formatPct(change: number): string {
   return `${rounded > 0 ? "+" : "−"}${pct.format(Math.abs(rounded))}%`;
 }
 
+/** Quantas contas têm cor própria; as demais somam em "Outras". */
+export const ACCOUNT_SLOTS = 4;
+
+/** Cor de identidade de uma conta, pela posição na lista (ordem validada). */
+export function accountColor(index: number): string {
+  return index < ACCOUNT_SLOTS ? `var(--series-acc-${index + 1})` : "var(--series-acc-other)";
+}
+
+export type Share = { key: string; label: string; value: number; color: string };
+
+/**
+ * Partes de um todo para a barra de divisão: só valores positivos, na ordem
+ * recebida, com o que passar de ACCOUNT_SLOTS somado em "Outras".
+ */
+export function splitShares(items: Share[]): Share[] {
+  const positive = items.filter((i) => i.value > 0);
+  const head = positive.slice(0, ACCOUNT_SLOTS);
+  const tail = positive.slice(ACCOUNT_SLOTS);
+  if (tail.length === 0) return head;
+  return [
+    ...head,
+    { key: "outras", label: "Outras", value: tail.reduce((s, i) => s + i.value, 0), color: accountColor(ACCOUNT_SLOTS) },
+  ];
+}
+
 /**
  * A variação é boa ou ruim? Para "saídas", subir é ruim; para "entradas", subir é bom.
  * Mudanças muito pequenas (< 1%) contam como neutras.

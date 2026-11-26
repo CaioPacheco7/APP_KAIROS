@@ -1,4 +1,4 @@
-import { ReceiptTextIcon } from "lucide-react";
+import { ArrowDownLeftIcon, ArrowUpRightIcon, ReceiptTextIcon, ScaleIcon } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { EmptyState } from "@/components/app/empty-state";
@@ -10,6 +10,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Metric } from "@/components/viz/metric";
 import { formatLongDate, monthBounds, parseMonth } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
@@ -94,7 +95,7 @@ export default async function TransacoesPage({
   const hasFilters = Boolean(accountFilter || categoryFilter || typeFilter);
 
   return (
-    <div className="grid grid-cols-1 gap-8">
+    <div className="grid grid-cols-1 gap-5">
       <PageHeader
         eyebrow="Finanças"
         title="Transações"
@@ -108,21 +109,22 @@ export default async function TransacoesPage({
         }
       />
 
-      {/* Resumo do período */}
-      <Card className="animate-rise" size="sm" style={{ "--d": "60ms" } as React.CSSProperties}>
-        <CardContent className="grid grid-cols-1 gap-4 divide-y divide-border sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-y-0">
-          <Total label="Entradas" value={formatBRL(income)} valueClass="text-money-in" />
-          <Total label="Saídas" value={formatBRL(expense)} className="pt-4 sm:pt-0 sm:pl-5" />
-          <Total
-            label="Resultado"
-            value={`${income - expense < 0 ? "− " : ""}${formatBRL(Math.abs(income - expense))}`}
-            className="pt-4 sm:pt-0 sm:pl-5"
-          />
-        </CardContent>
-      </Card>
+      {/* Resumo do período (segue os filtros abaixo) */}
+      <div className="glass-inner animate-rise grid grid-cols-2 gap-[7px] rounded-[20px] p-1.5 sm:grid-cols-3" style={{ "--d": "60ms" } as React.CSSProperties}>
+        <Metric label="Entradas" icon={ArrowDownLeftIcon} value={income} footer={hasFilters ? "com os filtros" : "no mês"} />
+        <Metric label="Saídas" icon={ArrowUpRightIcon} value={expense} footer={hasFilters ? "com os filtros" : "no mês"} />
+        <Metric
+          label="Resultado"
+          icon={ScaleIcon}
+          value={income - expense}
+          format="brl-signed"
+          className="col-span-2 sm:col-span-1"
+          footer={income - expense >= 0 ? "entrou mais do que saiu" : "saiu mais do que entrou"}
+        />
+      </div>
 
-      {/* Filtros */}
-      <form method="get" className="animate-rise flex flex-wrap items-end gap-3" style={{ "--d": "100ms" } as React.CSSProperties}>
+      {/* Filtros: uma linha acima de tudo que eles afetam */}
+      <form method="get" className="glass-inner animate-rise flex flex-wrap items-end gap-3 rounded-[16px] p-3" style={{ "--d": "100ms" } as React.CSSProperties}>
         <input type="hidden" name="mes" value={month} />
         <Field label="Tipo" htmlFor="f-tipo" className="w-40">
           <NativeSelect id="f-tipo" name="tipo" defaultValue={typeFilter ?? ""}>
@@ -184,9 +186,9 @@ export default async function TransacoesPage({
                 className="animate-rise"
                 style={{ "--d": `${Math.min(gi, 6) * 50}ms` } as React.CSSProperties}
               >
-                <div className="mb-2 flex items-baseline justify-between px-1">
-                  <h2 className="text-sm font-medium first-letter:uppercase">{formatLongDate(date)}</h2>
-                  <span className={cn("text-xs tabular-nums", dayTotal > 0 ? "text-money-in" : "text-muted-foreground")}>
+                <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
+                  <h2 className="text-[0.8125rem] font-extrabold tracking-[-0.01em] first-letter:uppercase">{formatLongDate(date)}</h2>
+                  <span className={cn("shrink-0 text-xs font-bold tabular-nums", dayTotal > 0 ? "text-money-in" : "text-muted-foreground")}>
                     {dayTotal > 0 ? "+ " : dayTotal < 0 ? "− " : ""}
                     {formatBRL(Math.abs(dayTotal))}
                   </span>
@@ -220,25 +222,6 @@ export default async function TransacoesPage({
           })}
         </div>
       )}
-    </div>
-  );
-}
-
-function Total({
-  label,
-  value,
-  className,
-  valueClass,
-}: {
-  label: string;
-  value: string;
-  className?: string;
-  valueClass?: string;
-}) {
-  return (
-    <div className={className}>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={cn("mt-1 font-display text-3xl leading-none tracking-normal tabular-nums", valueClass)}>{value}</p>
     </div>
   );
 }

@@ -59,6 +59,7 @@ docas, com desfoque próprio), `glass-stage` (palco), `glass-inner` (poços: cam
 | dourado (marca) | `#6B5016` (texto) · `#8A6A28` (marcas) | `#D6B878` | hábitos, progresso, destaques |
 | Entradas / Saídas | `#2F6DB8` / `#B9532F` | `#5B94DD` / `#DD7A50` | séries dos gráficos |
 | Saídas: fixas / dia a dia | `#8F3F22` / `#C9623A` | `#B85A35` / `#E89A74` | colunas empilhadas |
+| contas 1–4 / outras | `#2F6DB8` `#B9532F` `#6A4CE2` `#9A7428` / `#8A7F76` | `#5B94DD` `#DD7A50` `#9887EF` `#BD923F` / `#8C8078` | identidade das contas (barra de divisão do saldo); terracota e dourado nunca vizinhos |
 
 Como os painéis são translúcidos, o contraste foi **medido nos pixels reais** das capturas (não só no
 papel): no tema claro o vidro é um pouco mais opaco que o da referência para os textos de status
@@ -83,8 +84,9 @@ Feitos à mão em SVG/HTML (`components/viz/`), seguindo o guia de visualizaçã
 
 - **A forma vem do trabalho:** tendência → linhas (`FlowChart`); composição ao longo do tempo →
   colunas empilhadas (`SpendStack`); partes de um todo para comparar → barras ordenadas
-  (`CategoryBars`); um número → indicador (`Metric`); uma razão contra limites → medidor (`HealthSummary`).
-  Sem rosca/pizza.
+  (`CategoryBars`); um número → indicador (`Metric`); uma razão contra limites → medidor (`HealthSummary`);
+  como um todo se divide, com nome e valor de cada parte logo abaixo → barra fina segmentada, sem texto,
+  com o quadradinho da cor ao lado de cada nome (Contas). Sem rosca/pizza.
 - Linhas de 2px, colunas de até 24px com ponta arredondada de 4px e 2px de respiro entre partes,
   marcadores com anel da superfície, grade em linhas finas e **contínuas** (nunca tracejadas).
 - Legenda sempre que houver 2+ séries; dica ao passar o mouse **e** ao focar pelo teclado; todo gráfico
