@@ -1,4 +1,4 @@
-import { CheckIcon, FlameIcon } from "lucide-react";
+import { ArchiveIcon, CheckIcon, FlameIcon } from "lucide-react";
 import { ConfirmButton } from "@/components/confirm-button";
 import { WEEKDAY_SHORT } from "@/lib/habits";
 import { cn } from "@/lib/utils";
@@ -36,10 +36,10 @@ export function HabitRow({
           aria-label={doneToday ? `Desmarcar ${habit.name}` : `Marcar ${habit.name} como feito`}
           aria-pressed={doneToday}
           className={cn(
-            "grid size-9 place-items-center rounded-full border-2 transition-all duration-200 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40",
+            "grid size-9 place-items-center rounded-full border-2 transition-all duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             doneToday
-              ? "border-gold-fill bg-gold-fill text-[#1f1707] shadow-[0_6px_16px_-6px_var(--gold-fill)]"
-              : "border-input hover:border-gold-fill hover:bg-gold-soft",
+              ? "border-(--series-habit) bg-(--series-habit) text-[#fffaf0] shadow-[0_6px_16px_-8px_var(--series-habit)] dark:text-[#22180a]"
+              : "border-input bg-inner hover:border-(--series-habit) hover:bg-gold-soft",
           )}
         >
           {doneToday && <CheckIcon className="size-5" strokeWidth={3} />}
@@ -47,7 +47,7 @@ export function HabitRow({
       </form>
 
       <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-[0.9375rem] font-medium", doneToday && "text-muted-foreground line-through decoration-muted-foreground/50")}>
+        <p className={cn("truncate text-[0.875rem] font-bold", doneToday && "text-muted-foreground line-through decoration-muted-foreground/50")}>
           {habit.name}
         </p>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -63,10 +63,10 @@ export function HabitRow({
                 title={`${d.date.slice(8, 10)}/${d.date.slice(5, 7)} · ${DOT_LABEL[d.status]}`}
                 className={cn(
                   "size-2.5 rounded-full",
-                  d.status === "done" && "bg-gold-fill",
-                  d.status === "missed" && "bg-muted-foreground/30",
-                  d.status === "open" && "ring-[1.5px] ring-gold-fill ring-inset",
-                  d.status === "off" && "border border-dashed border-border",
+                  d.status === "done" && "bg-(--series-habit)",
+                  d.status === "missed" && "bg-track",
+                  d.status === "open" && "ring-[1.5px] ring-(--series-habit) ring-inset",
+                  d.status === "off" && "border border-dashed border-line",
                 )}
               />
             ))}
@@ -97,9 +97,10 @@ export function HabitRow({
               message={`Arquivar "${habit.name}"? Ele some da lista, mas o histórico é mantido.`}
               variant="ghost"
               size="sm"
-              className="text-muted-foreground"
+              className="text-muted-foreground max-sm:px-2"
             >
-              Arquivar
+              <ArchiveIcon className="sm:hidden" aria-hidden />
+              <span className="max-sm:sr-only">Arquivar</span>
             </ConfirmButton>
           </form>
         </div>

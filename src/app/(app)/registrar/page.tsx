@@ -60,7 +60,7 @@ export default async function RegistrarPage() {
       )}
 
       <div
-        className="animate-rise flex h-[40vh] min-h-64 flex-col gap-4 sm:h-[52vh] sm:min-h-80 overflow-y-auto rounded-3xl border border-border bg-card/50 p-4 shadow-card sm:p-6"
+        className="animate-rise glass-panel flex h-[max(12rem,calc(100svh-545px))] flex-col gap-4 overflow-y-auto rounded-[20px] p-4 sm:p-6 md:h-[max(18rem,calc(100svh-500px))]"
         style={{ "--d": "80ms" } as React.CSSProperties}
         aria-live="polite"
       >

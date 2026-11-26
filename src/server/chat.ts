@@ -192,7 +192,8 @@ export async function sendChatMessageAction(
   }
 
   revalidatePath("/", "layout");
-  return { status: "success" };
+  // A resposta volta para quem chamou (ex.: a busca mostra num aviso).
+  return { status: "success", message: reply.content };
 }
 
 const ENTITY_TABLE = {

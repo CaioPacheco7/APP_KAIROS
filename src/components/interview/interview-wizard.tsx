@@ -172,9 +172,9 @@ export function InterviewWizard({
             width={72}
             height={72}
             className="lg:hidden"
-            priority
+            loading="eager"
           />
-          <h1 className="font-display text-5xl leading-[1.05] tracking-tight">Vamos começar a controlar seus <em className="text-gold">gastos</em></h1>
+          <h1 className="text-[clamp(2rem,4vw,2.9rem)] leading-[1.04] font-extrabold tracking-[-0.055em]">Vamos começar a controlar seus <span className="text-gold">gastos</span></h1>
           <p className="text-sm text-muted-foreground">
             Para cuidar bem das suas finanças, preciso te conhecer um pouco.
             São poucas perguntas, leva cerca de 2 minutos: quanto você ganha,

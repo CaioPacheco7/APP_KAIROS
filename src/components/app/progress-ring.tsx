@@ -33,7 +33,7 @@ export function ProgressRing({
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={stroke} className="text-muted" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--gold-soft)" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -41,7 +41,7 @@ export function ProgressRing({
           fill="none"
           strokeWidth={stroke}
           strokeLinecap="round"
-          stroke="var(--gold-fill)"
+          stroke="var(--series-habit)"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - ratio)}
           className="transition-[stroke-dashoffset] duration-700"

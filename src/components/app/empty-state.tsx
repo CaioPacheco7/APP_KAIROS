@@ -22,14 +22,14 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "relative grid justify-items-center gap-3 overflow-hidden rounded-2xl border border-dashed border-border px-6 py-10 text-center",
+        "glass-inner relative grid justify-items-center gap-3 overflow-hidden rounded-[20px] border-dashed px-6 py-10 text-center",
         className,
       )}
     >
       <Hourglass className="pointer-events-none absolute -right-4 -bottom-6 h-36 text-foreground opacity-[0.04]" />
       <IconChip icon={icon} tone={tone} className="size-12 rounded-2xl" />
       <div className="grid grid-cols-1 gap-1">
-        <p className="font-display text-2xl leading-tight">{title}</p>
+        <p className="text-xl leading-tight font-extrabold tracking-[-0.035em]">{title}</p>
         {children && (
           <p className="mx-auto max-w-sm text-sm leading-relaxed text-muted-foreground">
             {children}
