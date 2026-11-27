@@ -25,7 +25,7 @@ export function TaskCard({ task, today }: { task: TaskRow; today: string }) {
           <button
             type="submit"
             aria-label={`Concluir “${task.title}”`}
-            className="grid size-5 place-items-center rounded-full border-2 border-input bg-inner text-transparent transition-colors outline-none hover:border-(--series-habit) hover:text-(--series-habit) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="relative grid size-5 place-items-center rounded-full border-2 border-input bg-inner text-transparent pointer-coarse:size-6 pointer-coarse:after:absolute pointer-coarse:after:-inset-2.5 pointer-coarse:after:content-[''] transition-colors outline-none hover:border-(--series-habit) hover:text-(--series-habit) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <CheckIcon className="size-3" strokeWidth={3} aria-hidden />
           </button>
@@ -45,7 +45,7 @@ export function TaskCard({ task, today }: { task: TaskRow; today: string }) {
         </form>
       </div>
       {(when || task.priority === "high") && (
-        <div className="flex flex-wrap items-center justify-between gap-1.5 pl-7 text-[0.625rem] font-semibold">
+        <div className="flex flex-wrap items-center justify-between gap-1.5 pl-7 text-[0.6875rem] sm:text-[0.625rem] font-semibold">
           {when ? (
             <span className={cn("flex items-center gap-1", overdue ? "text-risk" : "text-muted-foreground")}>
               <ClockIcon className="size-3" aria-hidden />

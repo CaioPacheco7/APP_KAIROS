@@ -35,7 +35,7 @@ export function TaskItem({ task, today }: { task: TaskRow; today: string }) {
           type="submit"
           aria-label={isDone ? "Reabrir" : "Concluir"}
           className={cn(
-            "grid size-6 place-items-center rounded-full border-2 border-input bg-inner transition-colors hover:border-(--series-habit) hover:bg-gold-soft",
+            "relative grid size-6 place-items-center rounded-full border-2 border-input bg-inner transition-colors hover:border-(--series-habit) hover:bg-gold-soft pointer-coarse:size-7 pointer-coarse:after:absolute pointer-coarse:after:-inset-2 pointer-coarse:after:content-['']",
             isDone && "border-(--series-habit) bg-(--series-habit) text-[#fffaf0] hover:bg-(--series-habit) dark:text-[#22180a]",
           )}
         >

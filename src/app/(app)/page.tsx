@@ -18,6 +18,7 @@ import { TodayAllowance } from "@/components/health/today-allowance";
 import { HabitRow } from "@/components/routine/habit-row";
 import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
+import { InstallHint } from "@/components/shell/install-hint";
 import { buttonVariants } from "@/components/ui/button";
 import { Count } from "@/components/viz/count";
 import { formatLongDate, greetingForHour, hourInSaoPaulo } from "@/lib/dates";
@@ -108,6 +109,9 @@ export default async function InicioPage() {
           Escolha por onde começar. O que você registrar fica guardado aqui, tudo em um só lugar.
         </p>
       </header>
+
+      {/* Só no celular e fora do app instalado */}
+      <InstallHint />
 
       {/* Atalhos */}
       <ul className="stagger grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -252,7 +256,7 @@ export default async function InicioPage() {
                 </ul>
               )}
               {todayHabits.length > 4 && (
-                <Link href="/rotina" className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline">
+                <Link href="/rotina" className="touch-hit text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline">
                   Ver todos os {todayHabits.length} hábitos de hoje
                 </Link>
               )}

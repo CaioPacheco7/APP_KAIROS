@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent text-[0.8125rem] font-bold whitespace-nowrap transition-[background-color,box-shadow,transform,filter,color] duration-200 outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent text-[0.8125rem] font-bold whitespace-nowrap transition-[background-color,box-shadow,transform,filter,color] duration-200 outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 pointer-coarse:after:absolute pointer-coarse:after:-inset-1 pointer-coarse:after:rounded-full pointer-coarse:after:content-['']",
   {
     variants: {
       variant: {
@@ -25,12 +25,14 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-10 px-4",
-        xs: "h-7 gap-1 px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-9 gap-1.5 px-3.5 text-[0.78125rem] [&_svg:not([class*='size-'])]:size-3.5",
+        // no toque (celular), os tamanhos pequenos crescem um pouco; o resto da área
+        // de toque vem do ::after acima (4 px para cada lado): todos passam de 44 px
+        xs: "h-7 gap-1 px-2.5 text-xs pointer-coarse:h-9 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-9 gap-1.5 px-3.5 text-[0.78125rem] pointer-coarse:h-10 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-11 px-5 text-[0.875rem]",
         icon: "size-10",
-        "icon-xs": "size-7 [&_svg:not([class*='size-'])]:size-3.5",
-        "icon-sm": "size-9",
+        "icon-xs": "size-7 pointer-coarse:size-9 [&_svg:not([class*='size-'])]:size-3.5",
+        "icon-sm": "size-9 pointer-coarse:size-10",
         "icon-lg": "size-11",
       },
     },

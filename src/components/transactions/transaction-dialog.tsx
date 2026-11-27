@@ -21,6 +21,7 @@ import { centsToInput, formatBRL, parseMoneyToCents } from "@/lib/money";
 import { useServerForm } from "@/lib/use-server-form";
 import { cn } from "@/lib/utils";
 import { saveTransactionAction } from "@/server/transactions";
+import { dockPlusClass } from "@/components/shell/styles";
 import {
   TRANSACTION_TYPE_LABEL,
   type Transaction,
@@ -38,6 +39,8 @@ type Props = {
   today: string;
   /** Se informado, o diálogo edita esta transação. */
   transaction?: Transaction;
+  /** "dock" = o "+" redondo no meio da doca do celular */
+  trigger?: "button" | "dock";
 };
 
 const INSTALLMENT_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18, 21, 24, 36, 48];
@@ -57,6 +60,10 @@ export function TransactionDialog(props: Props) {
         >
           <PencilIcon />
         </Button>
+      ) : props.trigger === "dock" ? (
+        <button type="button" aria-label="Novo lançamento" onClick={() => setOpen(true)} className={dockPlusClass}>
+          <PlusIcon className="size-6" strokeWidth={2.4} aria-hidden />
+        </button>
       ) : (
         <Button size="sm" onClick={() => setOpen(true)} className="max-[420px]:px-2.5">
           <PlusIcon /> <span className="max-[420px]:sr-only">Novo</span>

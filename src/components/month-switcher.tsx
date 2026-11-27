@@ -23,7 +23,7 @@ export function MonthSwitcher({
   };
 
   const arrow = cn(
-    "grid size-[35px] place-items-center rounded-full text-muted-foreground transition-colors outline-none hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
+    "touch-hit grid size-[35px] place-items-center rounded-full text-muted-foreground transition-colors outline-none hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
   );
 
   return (

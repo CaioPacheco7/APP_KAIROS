@@ -84,7 +84,7 @@ export function FlowChart({ points }: { points: FlowPoint[] }) {
 
       <div className="grid grid-cols-[44px_minmax(0,1fr)]">
         {/* eixo Y: marcas redondas, por extenso abaixo de 10 mil */}
-        <div className="relative h-[200px] text-[0.625rem] text-muted-foreground tabular-nums" aria-hidden>
+        <div className="relative h-[200px] text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground tabular-nums" aria-hidden>
           {scale.ticks.map((t) => (
             <span key={t} className="money absolute right-2 -translate-y-1/2" style={{ top: top(t) }}>
               {tickLabel(t, scale.max)}
@@ -167,7 +167,7 @@ export function FlowChart({ points }: { points: FlowPoint[] }) {
         </div>
       </div>
 
-      <div className="ml-[44px] flex text-[0.625rem] text-muted-foreground" aria-hidden>
+      <div className="ml-[44px] flex text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground" aria-hidden>
         {points.map((p, i) => (
           <span key={p.key} className={cn("min-w-0 flex-1 text-center", i === n - 1 && "font-bold text-foreground")}>
             {p.label}

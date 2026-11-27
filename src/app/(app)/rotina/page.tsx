@@ -191,7 +191,7 @@ async function Today({ today }: { today: string }) {
           )}
           {others.length > 0 && (
             <details className="group mt-3">
-              <summary className="cursor-pointer text-[0.75rem] font-semibold text-muted-foreground select-none hover:text-foreground">
+              <summary className="touch-hit cursor-pointer text-[0.75rem] font-semibold text-muted-foreground select-none hover:text-foreground">
                 Fora da agenda de hoje ({others.length})
               </summary>
               <ul className="mt-2 divide-y divide-line">
@@ -315,7 +315,7 @@ async function Board({ kind, today }: { kind: "task" | "reminder"; today: string
 
       {done.length > 0 && (
         <details className="glass-inner rounded-[16px] px-4 py-3">
-          <summary className="cursor-pointer text-[0.75rem] font-semibold text-muted-foreground select-none hover:text-foreground">
+          <summary className="touch-hit cursor-pointer text-[0.75rem] font-semibold text-muted-foreground select-none hover:text-foreground">
             Concluídas recentemente ({done.length})
           </summary>
           <ul className="mt-2 divide-y divide-line">

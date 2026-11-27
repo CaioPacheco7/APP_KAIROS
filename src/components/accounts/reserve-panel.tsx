@@ -57,7 +57,7 @@ export function ReservePanel({ reserve, className }: { reserve: Reserve; classNa
             style={{ left: at(3) }}
           />
         </div>
-        <div className="relative h-4 text-[0.625rem] font-semibold text-muted-foreground tabular-nums" aria-hidden>
+        <div className="relative h-4 text-[0.6875rem] sm:text-[0.625rem] font-semibold text-muted-foreground tabular-nums" aria-hidden>
           <span className="absolute left-0">0</span>
           <span className="absolute -translate-x-1/2" style={{ left: at(3) }}>
             3

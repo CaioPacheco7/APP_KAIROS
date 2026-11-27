@@ -12,3 +12,13 @@ export async function setOnboardedCookie() {
     path: "/",
   });
 }
+
+/**
+ * Esquece o "entrevista concluída" deste navegador (ao sair ou ao entrar).
+ * Assim, outra pessoa no mesmo aparelho não pula a entrevista: o proxy manda
+ * conferir no banco e o cookie volta só para quem já concluiu.
+ */
+export async function clearOnboardedCookie() {
+  const store = await cookies();
+  store.delete(ONBOARDED_COOKIE);
+}

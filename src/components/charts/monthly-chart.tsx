@@ -106,7 +106,7 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
       )}
 
       <details className="text-xs text-muted-foreground">
-        <summary className="cursor-pointer select-none">Ver como tabela</summary>
+        <summary className="touch-hit cursor-pointer select-none">Ver como tabela</summary>
         <table className="mt-2 w-full text-left tabular-nums">
           <thead>
             <tr>

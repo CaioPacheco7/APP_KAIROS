@@ -34,7 +34,7 @@ export function ChatComposer({
               setText(s);
               inputRef.current?.focus();
             }}
-            className="shrink-0 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-gold-fill/50 hover:text-foreground"
+            className="shrink-0 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs text-muted-foreground pointer-coarse:py-2.5 transition-colors hover:border-gold-fill/50 hover:text-foreground"
           >
             {s}
           </button>

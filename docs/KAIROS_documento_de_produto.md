@@ -372,6 +372,17 @@ Próximos candidatos do levantamento: app instalável + notificações (tira PWA
 - (Recorrências já entregues na Fase 1.5)
 - **Ainda fora:** conta fixa/assinatura cobrada no cartão (hoje a recorrência sai de uma conta), estorno no cartão, lançar no cartão pelo Registrar (chat), subcategorias na tela (o orçamento já soma a categoria-pai)
 
+### App de celular (branch `feature/app-celular`, sobre cartões e orçamento)
+
+> Decisão de 27/11/2026: o KAIROS vai ser usado principalmente pelo celular, como aplicativo, e por várias pessoas. Prioridade: facilidade.
+
+- **Instalável** (PWA): ícone na tela inicial, tela cheia, atalhos e convite de instalação no Início (Android: botão; iPhone: pelo Compartilhar)
+- **Feito para o dedo:** área de toque de 44 px ou mais, textos de no mínimo 11 px, campos sem zoom no iPhone
+- **"+" na doca** do celular para lançar de qualquer tela; formulários como folha de baixo; abas de Finanças todas à vista
+- **Sem internet:** aviso no topo e nova tentativa automática quando a conexão volta
+- **Segurança básica** para publicar: cabeçalhos contra embutir o app em outro site e contra adivinhar tipo de arquivo
+- **Ainda fora:** publicar (Vercel) e usar o Supabase de verdade; notificações push (lembretes, faturas, orçamento); abrir para outras pessoas (login do Google publicado, cadastro por convite ou livre, política de privacidade/LGPD)
+
 ### Fase 3 — Objetivos pessoais
 - Metas não financeiras (marcos e prazos)
 - Dashboard de metas e integração dos planos com o orçamento (reservar o aporte mensal)
@@ -386,7 +397,7 @@ Próximos candidatos do levantamento: app instalável + notificações (tira PWA
 - Importação de extrato (CSV/OFX)
 
 ### Fora do MVP (parking lot)
-Open Finance, app mobile/PWA offline, compartilhamento com outra pessoa (casal/família), multi-moeda, notificações push.
+Open Finance, app nas lojas (Play Store/App Store) e uso offline completo, compartilhamento com outra pessoa (casal/família), multi-moeda, notificações push.
 
 ---
 

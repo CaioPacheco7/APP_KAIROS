@@ -48,7 +48,7 @@ function monthLabels(weeks: YearWeek[]): Array<string | null> {
 /**
  * Mapa do ano: um quadradinho por dia (colunas = semanas, de segunda a
  * domingo), mais escuro quanto mais hábitos previstos foram feitos.
- * Passe o mouse ou use as setas do teclado para ler cada dia.
+ * Toque num dia, passe o mouse ou use as setas do teclado para ler cada dia.
  */
 export function HabitYearMap({ weeks }: { weeks: YearWeek[] }) {
   const days = useMemo(() => weeks.flatMap((w) => w.days).filter((d): d is YearDay => d !== null), [weeks]);
@@ -98,7 +98,7 @@ export function HabitYearMap({ weeks }: { weeks: YearWeek[] }) {
 
       <div className="grid grid-cols-[28px_minmax(0,1fr)] gap-1.5">
         {/* dias da semana */}
-        <div className="grid grid-rows-[14px_repeat(7,var(--cell))] gap-[3px] text-[0.5625rem] leading-(--cell) text-muted-foreground" aria-hidden>
+        <div className="grid grid-rows-[14px_repeat(7,var(--cell))] gap-[3px] text-[0.6875rem] sm:text-[0.5625rem] leading-(--cell) text-muted-foreground" aria-hidden>
           <span />
           {WEEKDAY_LABEL.map((label, i) => (
             <span key={i}>{label}</span>
@@ -122,7 +122,7 @@ export function HabitYearMap({ weeks }: { weeks: YearWeek[] }) {
           >
             {weeks.map((week, w) => (
               <div key={w} className="contents">
-                <span className="relative text-[0.5625rem] leading-[14px] whitespace-nowrap text-muted-foreground" aria-hidden>
+                <span className="relative text-[0.6875rem] sm:text-[0.5625rem] leading-[14px] whitespace-nowrap text-muted-foreground" aria-hidden>
                   {labels[w] ?? ""}
                 </span>
                 {week.days.map((day, d) => {
@@ -134,6 +134,8 @@ export function HabitYearMap({ weeks }: { weeks: YearWeek[] }) {
                       key={d}
                       aria-hidden
                       onMouseEnter={() => setActive(i)}
+                      // no celular, um toque no dia mostra a leitura
+                      onClick={() => setActive(i)}
                       className={cn(
                         "size-(--cell) rounded-[3px]",
                         level === null ? "border border-line" : LEVEL_BG[level],
@@ -150,7 +152,7 @@ export function HabitYearMap({ weeks }: { weeks: YearWeek[] }) {
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[0.6875rem] text-muted-foreground">
         <p id="habit-year-readout" aria-live="polite" className="min-h-[1rem] font-semibold text-foreground">
-          {shown ? `${capitalize(dayName(shown.date))}: ${describe(shown)}` : "Passe o mouse ou use as setas para ver cada dia"}
+          {shown ? `${capitalize(dayName(shown.date))}: ${describe(shown)}` : "Toque num dia (ou passe o mouse, ou use as setas) para ver os detalhes"}
         </p>
         <span className="flex items-center gap-1.5" aria-hidden>
           Menos

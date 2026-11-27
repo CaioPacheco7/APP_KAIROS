@@ -50,7 +50,7 @@ export function SpendStack({ columns, height = 150 }: { columns: SpendColumn[]; 
       </div>
 
       <div className="grid grid-cols-[40px_minmax(0,1fr)]">
-        <div className="relative text-[0.625rem] text-muted-foreground tabular-nums" style={{ height }} aria-hidden>
+        <div className="relative text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground tabular-nums" style={{ height }} aria-hidden>
           {scale.ticks.map((t) => (
             <span key={t} className="money absolute right-2 -translate-y-1/2" style={{ top: `${(1 - t / scale.max) * 100}%` }}>
               {tickLabel(t, scale.max)}
@@ -111,7 +111,7 @@ export function SpendStack({ columns, height = 150 }: { columns: SpendColumn[]; 
         </div>
       </div>
 
-      <div className="ml-[40px] grid text-[0.625rem] text-muted-foreground" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }} aria-hidden>
+      <div className="ml-[40px] grid text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }} aria-hidden>
         {columns.map((c, i) => (
           <span key={c.key} className={cn("truncate text-center", i === n - 1 && "font-bold text-foreground")}>
             {c.label}

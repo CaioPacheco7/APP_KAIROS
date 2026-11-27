@@ -27,7 +27,7 @@ export default function EntrevistaLayout({ children }: { children: React.ReactNo
       />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(30_20_14/70%),rgb(30_20_14/34%)_42%,transparent_78%)] dark:bg-[linear-gradient(100deg,rgb(0_0_0/76%),rgb(0_0_0/42%)_42%,rgb(0_0_0/20%)_78%)]" />
 
-      <div className="mx-auto grid min-h-screen w-full max-w-[1380px] content-center gap-8 px-3 py-6 md:w-[calc(100%-74px)] md:px-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12">
+      <div className="mx-auto grid min-h-screen w-full max-w-[1380px] content-center gap-8 px-3 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:w-[calc(100%-74px)] md:px-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12">
         {/* O que você ganha */}
         <aside className="hidden text-white lg:block">
           <BrandMark size={38} nameClassName="text-white" />

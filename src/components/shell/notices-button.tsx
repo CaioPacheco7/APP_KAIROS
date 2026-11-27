@@ -57,7 +57,7 @@ export function NoticesButton({ items }: { items: Notice[] }) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="gap-4 p-[18px] sm:max-w-[485px]">
+        <DialogContent className="gap-4 p-[18px] pb-[calc(18px+env(safe-area-inset-bottom))] sm:p-[18px] sm:max-w-[485px]">
           <div>
             <DialogTitle>O que precisa de você</DialogTitle>
             <DialogDescription className="mt-1">

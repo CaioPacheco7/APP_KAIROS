@@ -29,7 +29,7 @@ as peças reutilizáveis, em `src/components/`. O estilo nasceu de um painel de 
 | Palco | `app/(app)/layout.tsx` | o painel de vidro grande onde a tela acontece |
 | Doca lateral | `components/shell/docks.tsx` | os 4 módulos (computador), só ícones com dica |
 | Doca de baixo | idem | abas do módulo atual (Finanças, Rotina); no Início e no Registrar, os módulos |
-| Celular | idem | doca fixa embaixo com os módulos; as abas do módulo ficam no topo do palco |
+| Celular | idem | doca fixa embaixo com os módulos e o "+" no meio; as abas do módulo ficam no topo do palco, todas à vista |
 
 O mapa de módulos, abas, cenas e destinos da busca é puro e testado: `lib/navigation.ts`.
 
@@ -162,6 +162,31 @@ nas semanas mais recentes. Legenda "Menos → Mais", leitura do dia ao passar o 
   vai até o maior entre gasto e limite.
 - A barra **nunca muda de cor** por estar acima do limite: o vermelho de risco e a cor das Saídas são quase o mesmo
   tom no tema claro. Quem diz "passou" é o texto com ícone logo abaixo.
+
+## Celular e app instalável
+
+O KAIROS é pensado para o celular primeiro (vai ser usado como aplicativo, instalado na tela inicial).
+
+- **Instalar:** `app/manifest.ts` (+ `lib/app-manifest.ts`, testado) com nome, ícones em `public/icons/`
+  (normais e "adaptáveis" para o Android recortar), tela cheia (`standalone`), cor da abertura `#0c0b0c` e atalhos
+  (Registrar, Meu mês, Cartões, Hábitos). O manifesto e os ícones ficam fora do login (`src/proxy.ts`).
+- **Convite:** `components/shell/install-hint.tsx` no Início, só no toque e fora do app instalado. Android: botão
+  "Instalar"; iPhone: o caminho pelo Compartilhar. "Agora não" fica salvo no aparelho.
+- **Bordas do aparelho:** `viewport-fit=cover` + `env(safe-area-inset-*)` no topo (entalhe), na doca e nas folhas.
+  No iPhone instalado, a barra de status fica sobre a cena (`black-translucent`).
+- **Toque (`pointer: coarse`):** todo controle tem área de toque de 44 px ou mais. Os botões pequenos crescem um
+  pouco e ganham um `::after` invisível; links e textos clicáveis usam a classe `touch-hit`. No mouse nada muda.
+- **Texto:** nada abaixo de 11 px no celular (`text-[0.6875rem] sm:text-[0.625rem]`). Campos com 16 px, senão o
+  iPhone dá zoom ao tocar.
+- **Formulários:** no celular abrem como **folha de baixo** (alcance do polegar); a partir de 640 px, janela no
+  centro. A busca/registro fica presa no **topo** (o teclado ocupa a parte de baixo).
+- **Doca do celular:** módulos + o **"+"** no meio, que lança gasto, receita ou compra no cartão de qualquer tela
+  (`components/shell/quick-add.tsx`). Por isso o "+ Novo" do topo some no celular.
+- **Abas do módulo:** todas visíveis numa linha (ícone + nome curto; "Transações" vira "Extrato").
+- **Sem internet:** `experimental.useOffline` + `components/shell/offline-banner.tsx`: aviso no topo e o Next repete
+  sozinho a navegação e os registros quando a conexão volta.
+
+Conferir no celular: `shots/mobile-audit.mjs` (scratchpad) mede alvos de toque, textos, zoom e rolagem em todas as telas.
 
 ## Padrões de página
 

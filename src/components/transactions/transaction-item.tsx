@@ -61,7 +61,7 @@ export function TransactionItem({
         <p className="truncate text-xs text-muted-foreground">
           {meta.join(" · ")}
           {t.status === "pending" && (
-            <span className="ml-1.5 rounded-full border border-border px-1.5 py-px text-[0.625rem] tracking-wide">
+            <span className="ml-1.5 rounded-full border border-border px-1.5 py-px text-[0.6875rem] sm:text-[0.625rem] tracking-wide">
               agendada
             </span>
           )}

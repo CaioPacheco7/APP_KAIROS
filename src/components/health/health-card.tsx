@@ -60,7 +60,7 @@ export function HealthSummary({
               {Math.round(ratio)}
               <span className="text-lg">%</span>
             </span>
-            <span className="mt-0.5 block text-[0.625rem] font-semibold text-muted-foreground">da renda comprometida</span>
+            <span className="mt-0.5 block text-[0.6875rem] sm:text-[0.625rem] font-semibold text-muted-foreground">da renda comprometida</span>
           </p>
         )}
       </div>
@@ -85,7 +85,7 @@ export function HealthSummary({
               style={{ left: at(ratio), background: color }}
             />
           </div>
-          <div className="relative h-4 text-[0.625rem] font-semibold text-muted-foreground tabular-nums">
+          <div className="relative h-4 text-[0.6875rem] sm:text-[0.625rem] font-semibold text-muted-foreground tabular-nums">
             <span className="absolute left-0">0%</span>
             <span className="absolute -translate-x-1/2" style={{ left: at(greenMax) }}>{greenMax}%</span>
             <span className="absolute -translate-x-1/2" style={{ left: at(yellowMax) }}>{yellowMax}%</span>

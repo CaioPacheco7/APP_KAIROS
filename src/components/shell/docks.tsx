@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   MODULES,
   activeSubId,
@@ -115,6 +115,8 @@ function Dock({
   orientation,
   showText,
   className,
+  slot,
+  slotIndex = 0,
 }: {
   items: DockItem[];
   label: string;
@@ -122,6 +124,9 @@ function Dock({
   /** "full" = nome inteiro · "short" = nome curto embaixo do ícone · "tip" = só ícone com dica */
   showText: "full" | "short" | "tip";
   className?: string;
+  /** algo extra no meio da doca (o "+" do celular), antes do item `slotIndex` */
+  slot?: React.ReactNode;
+  slotIndex?: number;
 }) {
   const signature = items.map((i) => `${i.key}:${i.active}`).join("|");
   const { trackRef, box } = useIndicator(signature);
@@ -142,16 +147,19 @@ function Dock({
             style={{ width: box.w, height: box.h, transform: `translate(${box.x}px, ${box.y}px)` }}
           />
         )}
-        {items.map((item) => (
+        {items.map((item, index) => (
+          <Fragment key={item.key}>
+          {slot && index === slotIndex && (
+            <div className="relative z-10 flex shrink-0 items-center justify-center px-0.5">{slot}</div>
+          )}
           <Link
-            key={item.key}
             href={item.href}
             aria-current={item.active ? "page" : undefined}
             aria-label={showText === "tip" ? item.label : undefined}
             className={cn(
               "group/dock relative z-10 flex min-h-11 min-w-11 items-center justify-center rounded-full font-bold whitespace-nowrap transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
               showText === "full" && "gap-1.5 px-3.5 text-[0.75rem]",
-              showText === "short" && "flex-1 flex-col gap-0.5 px-1.5 py-1 text-[0.625rem] leading-tight",
+              showText === "short" && "flex-1 flex-col gap-0.5 px-1.5 py-1 text-[0.6875rem] sm:text-[0.625rem] leading-tight",
               item.active
                 ? cn("text-pick-ink", !box && "bg-pick")
                 : "text-foreground/85 hover:bg-inner hover:text-foreground",
@@ -169,6 +177,7 @@ function Dock({
               </span>
             )}
           </Link>
+          </Fragment>
         ))}
       </div>
     </nav>
@@ -211,8 +220,11 @@ export function BottomDock() {
   return <BottomDockInner />;
 }
 
-/** Doca fixa do celular: os quatro módulos, sempre à mão. */
-export function MobileDock() {
+/**
+ * Doca fixa do celular: os quatro módulos e, no meio, o "+" para lançar um
+ * gasto de qualquer tela (`action`, carregado no servidor pelo layout).
+ */
+export function MobileDock({ action }: { action?: React.ReactNode }) {
   const items = useModuleItems();
   return (
     <Dock
@@ -220,12 +232,17 @@ export function MobileDock() {
       label="Módulos"
       orientation="row"
       showText="short"
+      slot={action}
+      slotIndex={2}
       className="fixed inset-x-[11px] bottom-[calc(9px+env(safe-area-inset-bottom))] z-50 md:hidden [&>div]:justify-between"
     />
   );
 }
 
-/** Abas do módulo no celular: faixa rolável no topo do palco. */
+/**
+ * Abas do módulo no celular: todas visíveis numa linha (ícone + nome curto),
+ * sem precisar deslizar para descobrir as que ficavam fora da tela.
+ */
 export function SectionTabs() {
   const items = useSubItems();
   const signature = items.map((i) => `${i.key}:${i.active}`).join("|");
@@ -234,11 +251,11 @@ export function SectionTabs() {
 
   return (
     <nav aria-label="Seções do módulo" className="no-scrollbar -mx-1 mb-4 overflow-x-auto px-1 md:hidden">
-      <div ref={trackRef} className="glass-inner relative flex w-max gap-0.5 rounded-full p-[3px]">
+      <div ref={trackRef} className="glass-inner relative flex min-w-full gap-0.5 rounded-[18px] p-[3px]">
         {box && (
           <span
             aria-hidden
-            className="absolute top-0 left-0 rounded-full bg-primary transition-[transform,width] duration-300 ease-out"
+            className="absolute top-0 left-0 rounded-[15px] bg-primary transition-[transform,width] duration-300 ease-out"
             style={{ width: box.w, height: box.h, transform: `translate(${box.x}px, ${box.y}px)` }}
           />
         )}
@@ -248,12 +265,12 @@ export function SectionTabs() {
             href={item.href}
             aria-current={item.active ? "page" : undefined}
             className={cn(
-              "relative z-10 flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[0.75rem] font-bold whitespace-nowrap transition-colors",
+              "relative z-10 flex min-h-12 min-w-11 flex-auto flex-col items-center justify-center gap-0.5 rounded-[15px] px-1.5 text-[0.6875rem] leading-tight font-bold whitespace-nowrap transition-colors",
               item.active ? cn("text-primary-foreground", !box && "bg-primary") : "text-muted-foreground",
             )}
           >
-            <item.icon className="size-3.5" aria-hidden />
-            {item.label}
+            <item.icon className="size-4" aria-hidden />
+            {item.short}
           </Link>
         ))}
       </div>
