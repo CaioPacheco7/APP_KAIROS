@@ -4,6 +4,7 @@ import {
   FlagIcon,
   ShieldCheckIcon,
   TargetIcon,
+  Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { ContributionDialog } from "@/components/planning/contribution-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Count } from "@/components/viz/count";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { deleteGoalAction } from "@/server/goals";
@@ -49,14 +51,14 @@ export default async function PlanejarPage() {
     <div className="grid grid-cols-1 gap-10">
       {/* Capa com foto + os dois caminhos sobrepostos */}
       <div className="grid">
-        <section className="animate-rise relative overflow-hidden rounded-3xl border border-border shadow-card">
+        <section className="animate-rise relative overflow-hidden rounded-[24px] border border-rim shadow-card">
           <Image
             src="/photos/planejar-lago.jpg"
             alt=""
             fill
-            priority
+            loading="eager"
             sizes="(min-width: 1152px) 1152px, 100vw"
-            className="object-cover"
+            className="object-cover [filter:sepia(.22)_saturate(.78)_brightness(.9)] dark:[filter:grayscale(.55)_brightness(.6)]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/10" />
           <div className="relative max-w-2xl px-6 pt-10 pb-28 text-white sm:px-10 sm:pt-14 sm:pb-32">
@@ -140,16 +142,16 @@ export default async function PlanejarPage() {
 
                       <div className="grid grid-cols-1 gap-3">
                         <div className="flex items-end justify-between gap-3">
-                          <p className="font-display text-6xl leading-none tracking-normal tabular-nums">
-                            {Math.round(pct)}
-                            <span className="text-3xl text-muted-foreground">%</span>
+                          <p className="text-[clamp(2.6rem,4.5vw,3.6rem)] leading-none font-extrabold tracking-[-0.06em]">
+                            <Count value={Math.round(pct)} format="int" />
+                            <span className="text-2xl text-muted-foreground">%</span>
                           </p>
                           <p className="pb-1 text-right text-xs text-muted-foreground tabular-nums">
                             {formatBRL(done)} de {formatBRL(target)}
                           </p>
                         </div>
                         <div
-                          className="h-2.5 rounded-full bg-muted"
+                          className="h-2.5 overflow-hidden rounded-full bg-gold-soft"
                           role="progressbar"
                           aria-valuenow={Math.round(pct)}
                           aria-valuemin={0}
@@ -157,8 +159,8 @@ export default async function PlanejarPage() {
                           aria-label={`Progresso de ${goal.title}`}
                         >
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-gold-fill/70 to-gold-fill"
-                            style={{ width: `${Math.max(pct, done > 0 ? 2 : 0)}%` }}
+                            className="animate-grow-x h-full rounded-full bg-(--series-habit)"
+                            style={{ width: `${Math.max(pct, done > 0 ? 2 : 0)}%`, ["--d" as string]: `${200 + i * 60}ms` }}
                           />
                         </div>
                         <p className="text-sm text-muted-foreground tabular-nums">
@@ -184,9 +186,10 @@ export default async function PlanejarPage() {
                             message={`Excluir o plano "${goal.title}"? O histórico de aportes dele some das telas.`}
                             variant="ghost"
                             size="sm"
-                            className="text-muted-foreground"
+                            className="text-muted-foreground max-sm:px-2"
                           >
-                            Excluir
+                            <Trash2Icon className="sm:hidden" aria-hidden />
+                            <span className="max-sm:sr-only">Excluir</span>
                           </ConfirmButton>
                         </form>
                       </div>
@@ -220,7 +223,7 @@ function ChoiceCard({
   return (
     <Link
       href={href}
-      className="group animate-rise rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
+      className="group animate-rise rounded-[20px] outline-none focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring"
       style={{ "--d": `${delay}ms` } as React.CSSProperties}
     >
       <Card className="h-full shadow-pop transition-all duration-300 group-hover:-translate-y-1 group-hover:border-gold-fill/50">

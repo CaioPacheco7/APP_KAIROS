@@ -1,4 +1,12 @@
-import { CalendarClockIcon, CheckIcon, RotateCcwIcon } from "lucide-react";
+import {
+  ArrowDownLeftIcon,
+  CalendarClockIcon,
+  CalendarXIcon,
+  CheckIcon,
+  PiggyBankIcon,
+  ReceiptTextIcon,
+  RotateCcwIcon,
+} from "lucide-react";
 import { connection } from "next/server";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
@@ -6,6 +14,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { HealthCard } from "@/components/health/health-card";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { RecurrenceDialog } from "@/components/recurrences/recurrence-dialog";
+import { Metric } from "@/components/viz/metric";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,22 +96,22 @@ export default async function MesPage({
         <HealthCard health={snapshot.health} />
       </div>
 
-      {/* Faixa-resumo */}
-      <Card className="animate-rise" size="sm" style={{ "--d": "120ms" } as React.CSSProperties}>
-        <CardContent className="grid grid-cols-2 gap-y-5 sm:grid-cols-4 sm:divide-x sm:divide-border">
-          <Stat label="Renda do mês" value={formatBRL(snapshot.income)} note={`${formatBRL(snapshot.incomeSettled)} já recebido`} />
-          <Stat label="Contas fixas" value={formatBRL(billsTotal)} note={`${formatBRL(billsPaid)} já pago`} className="sm:pl-5" />
-          <Stat label="Gasto total do mês" value={formatBRL(snapshot.committed)} note="fixas + dia a dia" className="sm:pl-5" />
-          <Stat
-            label="Sobra prevista"
-            value={`${remaining < 0 ? "− " : ""}${formatBRL(Math.abs(remaining))}`}
-            note={snapshot.health.perDay ? `≈ ${formatBRL(snapshot.health.perDay)} por dia` : undefined}
-            className="sm:pl-5"
-          />
-        </CardContent>
-      </Card>
+      {/* Indicadores do mês (mesma grade da Visão geral; cabe no celular) */}
+      <div className="glass-inner animate-rise grid grid-cols-2 gap-[7px] rounded-[20px] p-1.5 lg:grid-cols-4" style={{ "--d": "120ms" } as React.CSSProperties}>
+        <Metric label="Renda do mês" icon={ArrowDownLeftIcon} value={snapshot.income} footer={`${formatBRL(snapshot.incomeSettled)} já recebido`} />
+        <Metric label="Contas fixas" icon={CalendarClockIcon} value={billsTotal} footer={`${formatBRL(billsPaid)} já pago`} />
+        <Metric label="Gasto total do mês" icon={ReceiptTextIcon} value={snapshot.committed} footer="fixas + dia a dia" />
+        <Metric
+          label="Sobra prevista"
+          icon={PiggyBankIcon}
+          value={remaining}
+          format={remaining < 0 ? "brl-signed" : "brl"}
+          highlight
+          footer={snapshot.health.perDay ? `≈ ${formatBRL(snapshot.health.perDay)} por dia` : "no fim do mês"}
+        />
+      </div>
 
-      <section className="grid items-start gap-5 lg:grid-cols-2">
+      <section className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         <Card className="animate-rise" style={{ "--d": "160ms" } as React.CSSProperties}>
           <CardHeader>
             <CardTitle>Entradas do mês</CardTitle>
@@ -189,9 +198,10 @@ export default async function MesPage({
                         message={`Encerrar "${r.description}"? As parcelas pendentes daqui para frente somem; o que já foi pago fica no histórico.`}
                         variant="ghost"
                         size="sm"
-                        className="text-muted-foreground"
+                        className="text-muted-foreground max-sm:px-2"
                       >
-                        Encerrar
+                        <CalendarXIcon className="sm:hidden" aria-hidden />
+                        <span className="max-sm:sr-only">Encerrar</span>
                       </ConfirmButton>
                     </form>
                   </div>
@@ -212,11 +222,11 @@ function InstanceRow({ item, today }: { item: Instance; today: string }) {
   const day = item.date.slice(8, 10);
 
   return (
-    <li className="flex items-center gap-3.5 py-3">
+    <li className="flex items-center gap-2.5 py-3 sm:gap-3.5">
       <span
         className={cn(
-          "grid size-11 shrink-0 place-items-center rounded-xl text-center leading-none",
-          settled ? "bg-gold-soft text-gold" : overdue ? "bg-destructive/10 text-destructive" : "bg-muted",
+          "grid size-10 shrink-0 place-items-center rounded-[12px] text-center leading-none sm:size-11",
+          settled ? "bg-gold-soft text-gold" : overdue ? "bg-destructive/10 text-destructive" : "glass-inner",
         )}
       >
         {settled ? (
@@ -244,46 +254,32 @@ function InstanceRow({ item, today }: { item: Instance; today: string }) {
         </p>
       </div>
 
-      <p className={cn("shrink-0 text-[0.9375rem] font-medium tabular-nums", isIncome && !settled && "text-money-in")}>
+      <p className={cn("shrink-0 text-[0.875rem] font-bold tabular-nums sm:text-[0.9375rem]", isIncome && !settled && "text-money-in")}>
         {formatBRL(item.amount)}
       </p>
 
+      {/* no celular o botão vira só ícone (o nome continua para leitores de tela) */}
       <form action={setPaidAction} className="shrink-0">
         <input type="hidden" name="id" value={item.id} />
         <input type="hidden" name="paid" value={String(!settled)} />
-        <Button type="submit" variant={settled ? "ghost" : "outline"} size="sm" className={cn(settled && "text-muted-foreground")}>
+        <Button
+          type="submit"
+          variant={settled ? "ghost" : "outline"}
+          size="sm"
+          className={cn("max-sm:px-2.5", settled && "text-muted-foreground")}
+        >
           {settled ? (
             <>
-              <RotateCcwIcon /> Desfazer
+              <RotateCcwIcon aria-hidden /> <span className="max-sm:sr-only">Desfazer</span>
             </>
           ) : (
             <>
-              <CheckIcon /> {isIncome ? "Recebi" : "Paguei"}
+              <CheckIcon aria-hidden /> <span className="max-sm:sr-only">{isIncome ? "Recebi" : "Paguei"}</span>
             </>
           )}
         </Button>
       </form>
     </li>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  note,
-  className,
-}: {
-  label: string;
-  value: string;
-  note?: string;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 font-display text-3xl leading-none tracking-normal tabular-nums">{value}</p>
-      {note && <p className="mt-1.5 text-xs text-muted-foreground">{note}</p>}
-    </div>
   );
 }
 

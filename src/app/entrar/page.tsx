@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { Hourglass } from "@/components/brand/hourglass";
+import { iconButtonClass } from "@/components/shell/styles";
 import { GoogleButton } from "./google-button";
 
 async function LoginError({
@@ -17,7 +18,7 @@ async function LoginError({
   return (
     <p
       role="alert"
-      className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+      className="flex items-start gap-2.5 rounded-[14px] border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive"
     >
       <ShieldCheckIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
       Não foi possível entrar. Esta conta não tem acesso ao KAIROS.
@@ -31,64 +32,63 @@ export default function EntrarPage({
   searchParams: Promise<{ erro?: string }>;
 }) {
   return (
-    <main className="grid min-h-screen lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-      {/* Foto e promessa da marca */}
-      <section className="relative isolate h-60 overflow-hidden lg:h-auto">
-        <Image
-          src="/photos/login-montanhas.jpg"
-          alt=""
-          fill
-          priority
-          sizes="(min-width: 1024px) 57vw, 100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/35" />
-        <Hourglass className="pointer-events-none absolute -right-10 bottom-6 hidden h-[26rem] text-white opacity-[0.07] lg:block" />
+    <main className="relative isolate min-h-screen overflow-hidden">
+      {/* Cena: a mesma foto e o mesmo filtro quente do app */}
+      <Image
+        src="/photos/login-montanhas.jpg"
+        alt=""
+        fill
+        loading="eager"
+        fetchPriority="high"
+        sizes="100vw"
+        className="-z-20 object-cover [filter:sepia(.22)_saturate(.78)_brightness(.9)] dark:[filter:grayscale(1)_brightness(.5)_contrast(1.05)]"
+      />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(30_20_14/72%),rgb(30_20_14/38%)_45%,transparent_80%),linear-gradient(0deg,rgb(30_20_14/45%),transparent_55%)] dark:bg-[linear-gradient(100deg,rgb(0_0_0/78%),rgb(0_0_0/45%)_45%,rgb(0_0_0/20%)_80%),linear-gradient(0deg,rgb(0_0_0/55%),transparent_55%)]" />
+      <Hourglass className="pointer-events-none absolute bottom-8 left-[38%] -z-10 hidden h-[26rem] text-white opacity-[0.06] lg:block" />
 
-        <div className="relative flex h-full flex-col justify-between p-6 text-white sm:p-10 lg:p-14">
+      <div className="mx-auto grid min-h-screen w-full max-w-[1380px] content-center gap-8 px-4 py-8 md:w-[calc(100%-74px)] md:px-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,440px)] lg:items-center lg:gap-14">
+        {/* Promessa da marca, sobre a foto */}
+        <section className="text-white">
           <BrandMark size={40} nameClassName="text-white" />
-          <blockquote className="hidden max-w-xl lg:block">
-            <p className="font-display text-5xl leading-[1.06] tracking-tight xl:text-6xl">
-              O momento certo para cuidar do seu <em className="text-[#e6cc90]">dinheiro</em>, do seu{" "}
-              <em className="text-[#e6cc90]">tempo</em> e da sua <em className="text-[#e6cc90]">rotina</em>.
+          <blockquote className="mt-10 hidden max-w-xl lg:block">
+            <p className="text-[clamp(2.4rem,4.2vw,3.6rem)] leading-[1.04] font-extrabold tracking-[-0.055em]">
+              O momento certo para cuidar do seu <span className="text-[#f0d9a6]">dinheiro</span>, do seu{" "}
+              <span className="text-[#f0d9a6]">tempo</span> e da sua <span className="text-[#f0d9a6]">rotina</span>.
             </p>
-            <footer className="mt-6 text-sm text-white/70">
-              Kairos, do grego: o instante oportuno.
-            </footer>
+            <footer className="mt-6 text-sm font-semibold text-white/75">Kairos, do grego: o instante oportuno.</footer>
           </blockquote>
-        </div>
-      </section>
+        </section>
 
-      {/* Acesso */}
-      <section className="relative flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16">
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
-          <ThemeToggle />
-        </div>
+        {/* Acesso, no vidro */}
+        <section className="glass-stage relative rounded-[28px] p-6 sm:p-9">
+          <div className="absolute top-4 right-4">
+            <ThemeToggle className={iconButtonClass} />
+          </div>
+          <div className="grid gap-7">
+            <div>
+              <p className="eyebrow mb-3">Bem-vindo</p>
+              <h1 className="text-[clamp(2.1rem,4vw,2.9rem)] leading-[1.03] font-extrabold tracking-[-0.06em]">
+                Entre no seu <span className="text-gold">KAIROS</span>
+              </h1>
+              <p className="mt-3 text-[0.875rem] leading-relaxed text-muted-foreground">
+                Entenda onde você está, organize o que importa e decida para onde quer ir.
+              </p>
+            </div>
 
-        <div className="mx-auto grid w-full max-w-sm gap-8">
-          <div>
-            <p className="eyebrow mb-4">Bem-vindo</p>
-            <h1 className="font-display text-5xl leading-[1.04] tracking-tight sm:text-6xl">
-              Entre no seu <em className="text-gold">KAIROS</em>
-            </h1>
-            <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted-foreground">
-              Entenda onde você está, organize o que importa e decida para onde quer ir.
+            <div className="grid grid-cols-1 gap-3">
+              <GoogleButton />
+              <Suspense>
+                <LoginError searchParams={searchParams} />
+              </Suspense>
+            </div>
+
+            <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
+              Acesso restrito a contas autorizadas. Seus dados ficam protegidos e só você os enxerga.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            <GoogleButton />
-            <Suspense>
-              <LoginError searchParams={searchParams} />
-            </Suspense>
-          </div>
-
-          <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
-            Acesso restrito a contas autorizadas. Seus dados ficam protegidos e só você os enxerga.
-          </p>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

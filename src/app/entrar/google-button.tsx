@@ -35,8 +35,8 @@ export function GoogleButton() {
       onClick={signIn}
       disabled={loading}
       className={cn(
-        "flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-black/10 bg-white px-5 text-[0.9375rem] font-medium text-[#1f1f1f] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_10px_24px_-14px_rgba(0,0,0,0.35)] transition-all duration-200 outline-none",
-        "hover:shadow-[0_1px_2px_rgba(0,0,0,0.1),0_14px_28px_-14px_rgba(0,0,0,0.45)] focus-visible:ring-[3px] focus-visible:ring-ring/40 active:translate-y-px",
+        "flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-black/10 bg-white px-5 text-[0.9375rem] font-bold text-[#1f1f1f] shadow-[0_1px_2px_rgba(0,0,0,0.08),0_10px_24px_-14px_rgba(0,0,0,0.35)] transition-all duration-200 outline-none",
+        "hover:shadow-[0_1px_2px_rgba(0,0,0,0.1),0_14px_28px_-14px_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring active:translate-y-px",
         "disabled:pointer-events-none disabled:opacity-70",
       )}
     >

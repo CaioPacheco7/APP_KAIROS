@@ -52,8 +52,8 @@ export function TransactionDialog(props: Props) {
           <PencilIcon />
         </Button>
       ) : (
-        <Button size="sm" onClick={() => setOpen(true)}>
-          <PlusIcon /> Novo
+        <Button size="sm" onClick={() => setOpen(true)} className="max-[420px]:px-2.5">
+          <PlusIcon /> <span className="max-[420px]:sr-only">Novo</span>
         </Button>
       )}
 

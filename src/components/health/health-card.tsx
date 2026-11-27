@@ -4,7 +4,6 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { Hourglass } from "@/components/brand/hourglass";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Health, HealthLevel } from "@/lib/finance/health";
 import { cn } from "@/lib/utils";
@@ -20,15 +19,18 @@ const tint = (color: string, pct: number) =>
   `color-mix(in oklab, ${color} ${pct}%, transparent)`;
 
 /**
- * Semáforo do mês: ícone + nome + % comprometida + uma régua com as três zonas
- * (verde, amarelo, vermelho) e a marca de onde você está. Nunca depende só da cor.
+ * Semáforo do mês: ícone + nome + % comprometida + um medidor com as três
+ * zonas (verde, amarelo, vermelho) e a marca de onde você está. Nunca depende só da cor.
  */
 export function HealthSummary({
   health,
   className,
+  compact = false,
 }: {
   health: Health;
   className?: string;
+  /** versão enxuta (sem a frase de orientação) */
+  compact?: boolean;
 }) {
   const { color, Icon } = STYLE[health.level];
   const ratio = health.ratio;
@@ -39,54 +41,50 @@ export function HealthSummary({
   const at = (v: number) => `${(Math.min(v, scale) / scale) * 100}%`;
 
   return (
-    <div
-      role="status"
-      className={cn("relative grid gap-5 overflow-hidden rounded-2xl border p-5", className)}
-      style={{ borderColor: tint(color, 38), background: `linear-gradient(135deg, ${tint(color, 7)}, transparent 60%)` }}
-    >
-      <div className="flex items-center gap-3.5">
+    <div role="status" className={cn("grid gap-4", className)}>
+      <div className="flex items-center gap-3">
         <span
-          className="grid size-11 shrink-0 place-items-center rounded-xl"
-          style={{ background: tint(color, 16), color }}
+          className="grid size-10 shrink-0 place-items-center rounded-[12px]"
+          style={{ background: tint(color, 15), color }}
         >
-          <Icon className="size-5" aria-hidden />
+          <Icon className="size-[18px]" aria-hidden />
         </span>
         <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Saúde financeira do mês</p>
-          <p className="font-display text-3xl leading-none tracking-normal">{health.label}</p>
+          <p className="text-[0.6875rem] font-semibold text-muted-foreground">Saúde do mês</p>
+          <p className="text-xl leading-tight font-extrabold tracking-[-0.03em]">{health.label}</p>
         </div>
         {ratio !== null && (
           <p className="ml-auto text-right">
-            <span className="font-display text-5xl leading-none tracking-normal tabular-nums">
+            <span className="text-[2rem] leading-none font-extrabold tracking-[-0.05em]">
               {Math.round(ratio)}
-              <span className="text-2xl">%</span>
+              <span className="text-lg">%</span>
             </span>
-            <span className="mt-1 block text-xs text-muted-foreground">da renda comprometida</span>
+            <span className="mt-0.5 block text-[0.625rem] font-semibold text-muted-foreground">da renda comprometida</span>
           </p>
         )}
       </div>
 
       {ratio !== null && (
         <div className="grid gap-1.5" aria-hidden>
-          <div className="relative h-3">
-            {/* zonas */}
-            <div className="absolute inset-0 flex overflow-hidden rounded-full">
-              <span style={{ width: at(greenMax), background: tint("var(--status-good)", 26) }} />
-              <span style={{ width: `calc(${at(yellowMax)} - ${at(greenMax)})`, background: tint("var(--status-warning)", 30) }} />
-              <span className="flex-1" style={{ background: tint("var(--status-critical)", 26) }} />
+          <div className="relative h-2.5">
+            {/* zonas: a trilha mostra o caminho todo, em tons claros do mesmo status */}
+            <div className="absolute inset-0 flex gap-[2px] overflow-hidden rounded-full">
+              <span style={{ width: at(greenMax), background: tint("var(--status-good)", 22) }} />
+              <span style={{ width: `calc(${at(yellowMax)} - ${at(greenMax)})`, background: tint("var(--status-warning)", 24) }} />
+              <span className="flex-1" style={{ background: tint("var(--status-critical)", 22) }} />
             </div>
             {/* quanto já foi comprometido */}
             <div
-              className="absolute inset-y-0 left-0 rounded-full"
-              style={{ width: at(ratio), background: color, boxShadow: `0 0 14px -2px ${tint(color, 60)}` }}
+              className="animate-grow-x absolute inset-y-0 left-0 rounded-full"
+              style={{ width: at(ratio), background: color }}
             />
-            {/* marcador */}
+            {/* marcador com anel da superfície */}
             <span
-              className="absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-card"
+              className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-[0_0_0_3px_var(--glass-surface)]"
               style={{ left: at(ratio), background: color }}
             />
           </div>
-          <div className="relative h-4 text-[0.6875rem] text-muted-foreground tabular-nums">
+          <div className="relative h-4 text-[0.625rem] font-semibold text-muted-foreground tabular-nums">
             <span className="absolute left-0">0%</span>
             <span className="absolute -translate-x-1/2" style={{ left: at(greenMax) }}>{greenMax}%</span>
             <span className="absolute -translate-x-1/2" style={{ left: at(yellowMax) }}>{yellowMax}%</span>
@@ -94,17 +92,16 @@ export function HealthSummary({
         </div>
       )}
 
-      <p className="text-[0.9375rem] leading-relaxed">{health.message}</p>
+      {!compact && <p className="text-[0.8125rem] leading-relaxed">{health.message}</p>}
     </div>
   );
 }
 
 export function HealthCard({ health }: { health: Health }) {
   return (
-    <Card className="relative">
-      <Hourglass className="pointer-events-none absolute -right-6 -bottom-8 h-48 text-foreground opacity-[0.035]" />
+    <Card>
       <CardContent>
-        <HealthSummary health={health} className="overflow-visible rounded-none border-0 bg-none p-0" />
+        <HealthSummary health={health} />
       </CardContent>
     </Card>
   );

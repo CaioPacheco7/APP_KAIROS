@@ -1,61 +1,49 @@
-import { LogOutIcon } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
-import { NewTransaction } from "@/components/app/new-transaction";
-import { ThemeToggle } from "@/components/app/theme-toggle";
-import { FinanceOnly, FinanceSubNav, MobileNav, TopNav } from "@/components/app/top-nav";
-import { BrandMark } from "@/components/brand/brand-mark";
-import { Button } from "@/components/ui/button";
+import { ShellFooter } from "@/components/shell/client-bits";
+import { BottomDock, MobileDock, SectionTabs, SideDock } from "@/components/shell/docks";
+import { Scenery } from "@/components/shell/scenery";
+import { TopBar } from "@/components/shell/top-bar";
 
+/**
+ * Casca do app no estilo "vidro": foto de cena ao fundo, barra do topo,
+ * palco de vidro com a tela atual, doca lateral (módulos) e doca de baixo
+ * (abas do módulo). No celular, uma doca fixa embaixo com os módulos.
+ */
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-(--header-bg) backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 px-4 sm:px-6">
-          <Link
-            href="/"
-            aria-label="KAIROS, ir para o início"
-            className="flex h-16 items-center"
+    <div className="relative flex min-h-screen flex-col">
+      <Scenery />
+      <a
+        href="#conteudo"
+        className="sr-only z-50 rounded-full bg-pick px-4 py-2 text-sm font-bold text-pick-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >
+        Pular para o conteúdo
+      </a>
+
+      <div className="mx-auto w-full max-w-[1380px] flex-1 px-3 pt-[11px] pb-[calc(84px+env(safe-area-inset-bottom))] md:w-[calc(100%-74px)] md:px-0 md:pt-6 md:pb-2 lg:w-[calc(100%-100px)]">
+        <TopBar />
+
+        <div className="relative mt-[11px]">
+          <SideDock />
+          <main
+            id="conteudo"
+            className="glass-stage min-w-0 rounded-[23px] px-[13px] pt-[15px] pb-[17px] md:rounded-[34px] md:px-[clamp(25px,3.2vw,49px)] md:pt-[clamp(19px,2.15vw,35px)] md:pb-24"
           >
-            <BrandMark />
-          </Link>
-
-          {/* centro: navegação principal (no celular fica na barra de baixo) */}
-          <div className="hidden md:block">
-            <TopNav />
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <FinanceOnly>
-              <Suspense
-                fallback={
-                  <Button size="sm" disabled>
-                    Novo
-                  </Button>
-                }
-              >
-                <NewTransaction />
-              </Suspense>
-            </FinanceOnly>
-            <ThemeToggle />
-            <form action="/auth/sair" method="post">
-              <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground">
-                <LogOutIcon />
-                <span className="hidden sm:inline">Sair</span>
-              </Button>
-            </form>
-          </div>
-
-          <FinanceSubNav />
+            <Suspense fallback={null}>
+              <SectionTabs />
+            </Suspense>
+            {/* Cada página tem o seu loading.tsx (carregamento instantâneo na navegação) */}
+            <div className="min-w-0">{children}</div>
+          </main>
+          <Suspense fallback={null}>
+            <BottomDock />
+          </Suspense>
         </div>
-      </header>
 
-      {/* Cada página tem o seu loading.tsx (carregamento instantâneo na navegação) */}
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 pb-28 sm:px-6 sm:pt-10 md:pb-14">
-        {children}
+        <ShellFooter />
       </div>
 
-      <MobileNav />
+      <MobileDock />
     </div>
   );
 }

@@ -3,31 +3,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-transparent text-sm font-medium whitespace-nowrap transition-[background-color,box-shadow,transform,filter,color] duration-200 outline-none select-none focus-visible:ring-[3px] focus-visible:ring-ring/35 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent text-[0.8125rem] font-bold whitespace-nowrap transition-[background-color,box-shadow,transform,filter,color] duration-200 outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         /** ação principal: tinta quente no claro, marfim no noturno */
         default:
-          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_18px_-10px_rgba(20,15,5,0.5)] hover:brightness-[1.08]",
+          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_6px_16px_-8px_rgb(var(--glass-shadow)/0.6)] hover:brightness-[1.17]",
         /** destaque da marca: dourado champanhe */
-        gold: "bg-gradient-to-b from-[#e6cc90] to-[#c9a55b] text-[#1f1707] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_22px_-10px_rgba(160,120,40,0.65)] hover:brightness-105",
+        gold: "bg-gradient-to-b from-[#ecd59c] to-[#c9a55b] text-[#1f1707] shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_8px_20px_-10px_rgba(140,100,30,0.7)] hover:brightness-105",
+        /** vidro elevado */
         outline:
-          "border-input bg-card text-foreground shadow-xs hover:bg-accent",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-accent",
-        ghost: "text-muted-foreground hover:bg-accent hover:text-foreground",
+          "glass-raised text-foreground hover:bg-surface",
+        secondary:
+          "glass-inner text-foreground hover:bg-raised",
+        ghost:
+          "text-muted-foreground hover:bg-inner hover:text-foreground",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/15",
+          "bg-destructive/12 text-destructive hover:bg-destructive/18",
         link: "text-foreground underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4",
-        xs: "h-7 gap-1 rounded-lg px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-9 gap-1.5 rounded-lg px-3 text-[0.8125rem] [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-11 px-5 text-[0.9375rem]",
+        xs: "h-7 gap-1 px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-9 gap-1.5 px-3.5 text-[0.78125rem] [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-11 px-5 text-[0.875rem]",
         icon: "size-10",
-        "icon-xs": "size-7 rounded-lg [&_svg:not([class*='size-'])]:size-3.5",
-        "icon-sm": "size-9 rounded-lg",
+        "icon-xs": "size-7 [&_svg:not([class*='size-'])]:size-3.5",
+        "icon-sm": "size-9",
         "icon-lg": "size-11",
       },
     },

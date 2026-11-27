@@ -30,10 +30,10 @@ export function HabitComposer() {
   });
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="grid grid-cols-1 gap-4 rounded-2xl border border-dashed border-border bg-card/40 p-5">
+    <form ref={formRef} onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
       <div>
-        <p className="font-display text-2xl leading-tight">Adicionar um hábito</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">O que você quer fazer todo dia (ou em alguns dias da semana).</p>
+        <p className="text-[0.9375rem] leading-tight font-extrabold tracking-[-0.02em]">Adicionar um hábito</p>
+        <p className="mt-0.5 text-[0.75rem] text-muted-foreground">O que você quer fazer todo dia (ou em alguns dias da semana).</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -42,7 +42,7 @@ export function HabitComposer() {
             key={s}
             type="button"
             onClick={() => setName(s)}
-            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-gold-fill/50 hover:text-foreground"
+            className="glass-inner rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-raised hover:text-foreground"
           >
             {s}
           </button>

@@ -2,6 +2,7 @@ import {
   ArrowRightIcon,
   CheckCheckIcon,
   CheckIcon,
+  CoinsIcon,
   ListChecksIcon,
   NotebookPenIcon,
   SquarePenIcon,
@@ -12,15 +13,16 @@ import { connection } from "next/server";
 import { IconChip, type Tone } from "@/components/app/icon-chip";
 import { ProgressRing } from "@/components/app/progress-ring";
 import { SectorCard } from "@/components/app/sector-card";
-import { Hourglass } from "@/components/brand/hourglass";
 import { HealthSummary } from "@/components/health/health-card";
 import { HabitRow } from "@/components/routine/habit-row";
 import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
 import { buttonVariants } from "@/components/ui/button";
+import { Count } from "@/components/viz/count";
 import { formatLongDate, greetingForHour, hourInSaoPaulo } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
+import { capitalize } from "@/lib/utils";
 import { getHabitBoard, summarizeToday } from "@/server/habits-board";
 import { getMonthSnapshot } from "@/server/health";
 import { getAccounts, getBalances, getFormOptions, getProfile } from "@/server/queries";
@@ -87,81 +89,95 @@ export default async function InicioPage() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-12">
+    <div className="grid grid-cols-1 gap-5">
       {/* Saudação */}
-      <section className="animate-rise relative grid gap-8">
-        <Hourglass className="pointer-events-none absolute -top-6 right-2 hidden h-64 text-gold-fill opacity-[0.07] lg:block" />
-        <div className="relative">
-          <p className="eyebrow mb-4">{formatLongDate(today)}</p>
-          <h1 className="font-display text-5xl leading-[1.02] tracking-tight sm:text-7xl">
-            {greeting}
-            {firstName ? (
-              <>
-                , <em className="text-gold">{firstName}</em>
-              </>
-            ) : null}
-            .
-          </h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
-            Escolha por onde começar. O que você registrar fica guardado aqui,
-            tudo em um só lugar.
-          </p>
-        </div>
+      <header className="animate-rise">
+        <p className="eyebrow mb-3">{capitalize(formatLongDate(today))}</p>
+        <h1 className="text-[clamp(2.15rem,4.8vw,4.1rem)] leading-[1.02] font-extrabold tracking-[-0.065em]">
+          {greeting}
+          {firstName ? (
+            <>
+              , <span className="text-gold">{firstName}</span>
+            </>
+          ) : null}
+          .
+        </h1>
+        <p className="mt-2.5 max-w-xl text-[0.875rem] leading-relaxed text-muted-foreground">
+          Escolha por onde começar. O que você registrar fica guardado aqui, tudo em um só lugar.
+        </p>
+      </header>
 
-        <ul className="relative grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {QUICK.map((q, i) => (
-            <li key={q.href} className="animate-rise" style={{ "--d": `${120 + i * 70}ms` } as React.CSSProperties}>
-              <Link
-                href={q.href}
-                className="group flex items-center gap-3.5 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-fill/40"
-              >
-                <IconChip icon={q.icon} tone={q.tone} />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{q.label}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{q.hint}</span>
-                </span>
-                <ArrowRightIcon className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Atalhos */}
+      <ul className="stagger grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        {QUICK.map((q) => (
+          <li key={q.href}>
+            <Link
+              href={q.href}
+              className="group glass-panel flex items-center gap-3 rounded-[16px] p-3 transition-[transform,background-color] duration-300 outline-none hover:-translate-y-0.5 hover:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <IconChip icon={q.icon} tone={q.tone} className="size-10 rounded-[12px]" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[0.8125rem] font-extrabold">{q.label}</span>
+                <span className="block truncate text-[0.6875rem] text-muted-foreground">{q.hint}</span>
+              </span>
+              <ArrowRightIcon className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </Link>
+          </li>
+        ))}
+      </ul>
 
       {/* Setores */}
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <section aria-label="Seus setores" className="stagger grid grid-cols-1 gap-3 lg:grid-cols-12">
         {/* Finanças */}
         <SectorCard
           title="Finanças"
           icon={WalletIcon}
-          photo="/photos/financas-broto.jpg"
+          tone="gold"
           href={finance ? "/dashboard" : undefined}
-          hrefLabel="Abrir"
-          priority
-          className="animate-rise lg:col-span-7"
-          sizes="(min-width: 1024px) 680px, 100vw"
+          className="lg:col-span-7"
         >
           {finance ? (
             <>
-              <div>
-                <p className="text-sm text-muted-foreground">Saldo total</p>
-                <p className="font-display text-6xl leading-none tracking-normal tabular-nums">
-                  {formatBRL(finance.balance)}
-                </p>
+              <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                <div>
+                  <p className="text-[0.6875rem] font-semibold text-muted-foreground">Saldo total</p>
+                  <p className="text-[clamp(2.2rem,4vw,3.2rem)] leading-[1.02] font-extrabold tracking-[-0.07em]">
+                    <Count value={finance.balance} />
+                  </p>
+                </div>
+                {finance.health.perDay !== null && (
+                  <p className="flex items-center gap-2 rounded-[12px] border border-[#f6e3b4] bg-[linear-gradient(145deg,#e9cd8f,#c39a50)] px-3 py-2 text-[#22180a]">
+                    <CoinsIcon className="size-4 shrink-0" aria-hidden />
+                    <span>
+                      <span className="block text-[0.625rem] font-bold">Pode gastar por dia</span>
+                      <strong className="block text-base leading-tight font-extrabold tracking-[-0.03em]">
+                        {formatBRL(Math.max(finance.health.perDay, 0))}
+                      </strong>
+                    </span>
+                  </p>
+                )}
               </div>
-              <HealthSummary health={finance.health} />
-              <Link href="/dashboard" className={buttonVariants({ variant: "outline" })}>
-                Abrir finanças <ArrowRightIcon />
-              </Link>
+              <div className="glass-inner rounded-[14px] p-3.5">
+                <HealthSummary health={finance.health} compact />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/dashboard" className={buttonVariants()}>
+                  Abrir finanças <ArrowRightIcon />
+                </Link>
+                <Link href="/registrar" className={buttonVariants({ variant: "outline" })}>
+                  Registrar um gasto
+                </Link>
+              </div>
             </>
           ) : (
             <>
-              <p className="text-[0.9375rem] leading-relaxed text-muted-foreground">
-                Um painel para entender o seu dinheiro e decidir com calma. Antes,
-                preciso te conhecer um pouco: são poucas perguntas.
+              <p className="text-[0.875rem] leading-relaxed text-muted-foreground">
+                Um painel para entender o seu dinheiro e decidir com calma. Antes, preciso te conhecer
+                um pouco: são poucas perguntas.
               </p>
               <ul className="grid gap-2.5">
                 {FINANCE_BENEFITS.map((b) => (
-                  <li key={b} className="flex items-start gap-2.5 text-sm">
+                  <li key={b} className="flex items-start gap-2.5 text-[0.8125rem] font-semibold">
                     <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-gold-soft text-gold">
                       <CheckIcon className="size-3" aria-hidden />
                     </span>
@@ -182,20 +198,12 @@ export default async function InicioPage() {
         </SectorCard>
 
         {/* Rotina */}
-        <SectorCard
-          title="Rotina"
-          icon={ListChecksIcon}
-          photo="/photos/rotina-yoga.jpg"
-          href="/rotina"
-          hrefLabel="Abrir"
-          className="animate-rise lg:col-span-5"
-          sizes="(min-width: 1024px) 480px, 100vw"
-        >
+        <SectorCard title="Rotina" icon={ListChecksIcon} tone="sage" href="/rotina" className="lg:col-span-5">
           {board.length === 0 ? (
             <>
-              <p className="text-[0.9375rem] leading-relaxed text-muted-foreground">
-                Monte a sua rotina: hábitos para marcar todo dia, como “tomar
-                creatina” ou “beber 2 litros de água”, além de tarefas e lembretes.
+              <p className="text-[0.875rem] leading-relaxed text-muted-foreground">
+                Monte a sua rotina: hábitos para marcar todo dia, como “tomar creatina” ou “beber 2
+                litros de água”, além de tarefas e lembretes.
               </p>
               <Link href="/rotina" className={`${buttonVariants({ variant: "gold", size: "lg" })} w-fit`}>
                 Montar minha rotina <ArrowRightIcon />
@@ -203,22 +211,22 @@ export default async function InicioPage() {
             </>
           ) : (
             <>
-              <div className="flex items-center gap-4">
-                <ProgressRing value={done} max={Math.max(total, 1)} size={80} label="Hábitos feitos hoje">
-                  <span className="font-display text-2xl tabular-nums">
+              <div className="glass-inner flex items-center gap-4 rounded-[14px] p-3">
+                <ProgressRing value={done} max={Math.max(total, 1)} size={72} stroke={7} label="Hábitos feitos hoje">
+                  <span className="text-xl leading-none font-extrabold tracking-[-0.04em]">
                     {done}
-                    <span className="text-base text-muted-foreground">/{total}</span>
+                    <span className="text-sm text-muted-foreground">/{total}</span>
                   </span>
                 </ProgressRing>
                 <div className="min-w-0">
-                  <p className="font-medium">
+                  <p className="text-[0.875rem] font-extrabold">
                     {total === 0
                       ? "Nenhum hábito para hoje"
                       : done === total
                         ? "Tudo feito por hoje"
                         : `${total - done} ${total - done === 1 ? "hábito falta" : "hábitos faltam"} hoje`}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[0.75rem] text-muted-foreground">
                     {pendingTasks > 0
                       ? `${pendingTasks} ${pendingTasks === 1 ? "tarefa" : "tarefas"} para hoje ou atrasadas`
                       : "Nenhuma tarefa pendente"}
@@ -227,14 +235,14 @@ export default async function InicioPage() {
               </div>
 
               {todayHabits.length > 0 && (
-                <ul className="-my-1 divide-y divide-border">
+                <ul className="-my-1 divide-y divide-line">
                   {todayHabits.slice(0, 4).map((h) => (
                     <HabitRow key={h.id} habit={h} today={today} manage={false} />
                   ))}
                 </ul>
               )}
               {todayHabits.length > 4 && (
-                <Link href="/rotina" className="text-xs text-muted-foreground underline">
+                <Link href="/rotina" className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline">
                   Ver todos os {todayHabits.length} hábitos de hoje
                 </Link>
               )}
@@ -246,15 +254,13 @@ export default async function InicioPage() {
         <SectorCard
           title="Bloco de notas"
           icon={NotebookPenIcon}
-          photo="/photos/notas-caderno.jpg"
+          tone="rose"
           href={notes.length > 0 ? "/rotina?aba=notas" : undefined}
           hrefLabel="Ver todas"
-          layout="side"
-          className="animate-rise lg:col-span-12"
-          sizes="(min-width: 1024px) 480px, 100vw"
+          className="lg:col-span-12"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[0.9375rem] text-muted-foreground">
+            <p className="text-[0.875rem] text-muted-foreground">
               {notes.length === 0
                 ? "Anote ideias, listas e lembranças. Tudo fica guardado aqui."
                 : "Suas anotações mais recentes."}

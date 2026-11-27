@@ -43,14 +43,16 @@ export function TransactionItem({
   ].filter(Boolean);
 
   return (
-    <li className={cn("group/tx flex items-center gap-3.5 py-3", className)}>
+    <li className={cn("group/tx flex items-center gap-2.5 py-3 sm:gap-3.5", className)}>
       <IconChip
         icon={Icon}
         tone={t.type === "income" ? "sage" : "neutral"}
-        className="size-11 rounded-xl"
+        // Com botões de ação (lista de Transações), o ícone sai no celular para o nome caber;
+        // a categoria continua escrita logo abaixo do nome.
+        className={cn("size-9 rounded-[11px] sm:size-11 sm:rounded-[12px]", actions && "max-sm:hidden")}
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[0.9375rem] font-medium">{title}</p>
+        <p className="truncate text-[0.875rem] font-bold sm:text-[0.9375rem]">{title}</p>
         <p className="truncate text-xs text-muted-foreground">
           {meta.join(" · ")}
           {t.status === "pending" && (

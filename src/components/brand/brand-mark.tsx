@@ -21,7 +21,7 @@ export function BrandMark({
         width={size}
         height={size}
         className="shrink-0 drop-shadow-[0_6px_14px_rgba(0,0,0,0.25)]"
-        priority
+        loading="eager"
       />
       {showName && (
         <span className={cn("text-[0.8125rem] font-semibold tracking-[0.32em]", nameClassName)}>

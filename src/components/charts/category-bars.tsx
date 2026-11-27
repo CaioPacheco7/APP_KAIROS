@@ -7,8 +7,9 @@ export type CategoryItem = { label: string; total: number };
 const MAX_BARS = 6;
 
 /**
- * Gasto por categoria: barras horizontais ordenadas, uma só cor (comparar
- * magnitude entre muitas partes). O que passar de MAX_BARS soma em "Outras".
+ * Gasto por categoria: lista de medidores ordenada, uma cor só (a das Saídas),
+ * para comparar partes entre si. O que passar de MAX_BARS soma em "Outras".
+ * Valor e porcentagem sempre em texto, ao lado de cada barra.
  */
 export function CategoryBars({ items }: { items: CategoryItem[] }) {
   const sorted = [...items].sort((a, b) => b.total - a.total);
@@ -31,27 +32,27 @@ export function CategoryBars({ items }: { items: CategoryItem[] }) {
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-4">
-      {rows.map((row) => (
-        <li key={row.label} className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5">
+    <ul className="grid grid-cols-1 gap-3.5">
+      {rows.map((row, i) => (
+        <li key={row.label} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5">
           <IconChip
             icon={transactionIcon("expense", row.label)}
-            className="row-span-2 size-9 rounded-lg"
-            iconClassName="size-4"
+            className="row-span-2 size-8 rounded-[10px]"
+            iconClassName="size-3.5"
           />
-          <div className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="truncate font-medium">{row.label}</span>
-            <span className="shrink-0 tabular-nums">
+          <div className="flex min-w-0 items-baseline justify-between gap-3 text-[0.8125rem]">
+            <span className="truncate font-semibold">{row.label}</span>
+            <span className="shrink-0 font-bold tabular-nums">
               {formatBRL(row.total)}
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="ml-1.5 text-[0.6875rem] font-semibold text-muted-foreground">
                 {Math.round((row.total / grand) * 100)}%
               </span>
             </span>
           </div>
-          <div className="h-2 rounded-full bg-muted" aria-hidden>
+          <div className="h-2 overflow-hidden rounded-full bg-track" aria-hidden>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-gold-fill/70 to-gold-fill"
-              style={{ width: `${Math.max((row.total / max) * 100, 3)}%` }}
+              className="animate-grow-x h-full rounded-full bg-(--series-out)"
+              style={{ width: `${Math.max((row.total / max) * 100, 2)}%`, ["--d" as string]: `${180 + i * 45}ms` }}
             />
           </div>
         </li>

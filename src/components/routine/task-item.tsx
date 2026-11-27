@@ -35,8 +35,8 @@ export function TaskItem({ task, today }: { task: TaskRow; today: string }) {
           type="submit"
           aria-label={isDone ? "Reabrir" : "Concluir"}
           className={cn(
-            "grid size-6 place-items-center rounded-full border-2 border-input transition-colors hover:border-gold-fill hover:bg-gold-soft",
-            isDone && "border-gold-fill bg-gold-fill text-[#1f1707] hover:bg-gold-fill",
+            "grid size-6 place-items-center rounded-full border-2 border-input bg-inner transition-colors hover:border-(--series-habit) hover:bg-gold-soft",
+            isDone && "border-(--series-habit) bg-(--series-habit) text-[#fffaf0] hover:bg-(--series-habit) dark:text-[#22180a]",
           )}
         >
           {isDone && <CheckIcon className="size-3.5" strokeWidth={3} />}

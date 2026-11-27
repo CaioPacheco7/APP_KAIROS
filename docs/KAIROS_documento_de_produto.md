@@ -116,7 +116,7 @@ Estrutura atual (decisão de 14/11/2026): o app abre no **Início**, com os seto
 /registrar                       Chat de registro rápido (gastos, tarefas, lembretes, notas)
 
 Finanças  (/financas → /dashboard)
-├── /dashboard                   Visão geral: saldo, semáforo, resumo do mês, gráficos
+├── /dashboard                   Visão geral: saldo, indicadores, semáforo, contas a pagar, planos, gráficos
 ├── /mes                         Meu mês: entradas, contas do mês (Paguei/Recebi), contas fixas
 ├── /transacoes                  Movimentações por dia, com filtros
 ├── /contas                      Contas e saldos
@@ -124,12 +124,15 @@ Finanças  (/financas → /dashboard)
     ├── /conquista               Simulador: conquistar algo
     └── /divida                  Simulador: sair de uma dívida
 
-/rotina                          Abas: Hoje (hábitos) · Tarefas · Lembretes · Notas
+/rotina                          Abas: Hoje (hábitos e semana) · Tarefas (quadro por prazo) · Lembretes · Notas
 ```
 
-**Navegação:** barra principal no topo (Início, Finanças, Rotina, Registrar), com as abas de Finanças logo abaixo
-quando se está nesse módulo; no celular, barra flutuante embaixo. Botão **"+ Novo"** (transação) dentro de Finanças.
-Alternância de **tema claro/noturno** no cabeçalho. Visual detalhado em `DESIGN.md`.
+**Navegação (design "vidro", branch `feature/design-vidro`):** doca lateral com os módulos (Início, Finanças, Rotina,
+Registrar) e doca de baixo com as abas do módulo atual; no celular, doca fixa embaixo com os módulos e as abas no
+topo da tela. Na barra do topo: **busca e registro rápido** (clique, Ctrl+K ou "/": vai para qualquer tela ou registra
+"café 12,50", "tarefa: …", "lembrar de …", "anotar: …"), **sino de avisos** (atrasos, o que é para hoje e contas que
+vencem em até 3 dias), botão **"+ Novo"** (transação, dentro de Finanças), tema claro/noturno e sair. Cada módulo tem
+uma foto de fundo própria. Visual detalhado em `DESIGN.md`.
 
 Ainda por vir: cartões, orçamento por categoria, relatórios, configurações.
 

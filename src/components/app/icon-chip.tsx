@@ -8,7 +8,7 @@ const TONES = {
   rose: "bg-[#b9645c]/12 text-[#a14a42] dark:bg-[#e0a199]/14 dark:text-[#e8aea6]",
   sky: "bg-[#3f7fd0]/12 text-[#2a5fa8] dark:bg-[#6fa8ee]/14 dark:text-[#95bff2]",
   ember: "bg-[#d9692f]/13 text-[#b4501f] dark:bg-[#f0916a]/14 dark:text-[#f0a07e]",
-  neutral: "bg-muted text-muted-foreground",
+  neutral: "glass-inner text-muted-foreground",
 } as const;
 
 export type Tone = keyof typeof TONES;
