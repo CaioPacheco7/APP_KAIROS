@@ -89,7 +89,7 @@ export function AskButton({ hint, onClick, disabled }: { hint: string; onClick?:
       <span key={hint} className="animate-type-in min-w-0 truncate text-[0.78125rem] font-bold">
         {hint}
       </span>
-      <kbd className="ml-auto hidden shrink-0 rounded-md border border-line px-1.5 py-0.5 font-sans text-[0.625rem] font-bold text-muted-foreground lg:inline">
+      <kbd className="ml-auto hidden shrink-0 rounded-md border border-line px-1.5 py-0.5 font-sans text-[0.6875rem] sm:text-[0.625rem] font-bold text-muted-foreground lg:inline">
         Ctrl K
       </kbd>
       <SearchIcon aria-hidden className="ml-auto size-[15px] shrink-0 text-muted-foreground lg:ml-0" />
@@ -209,7 +209,11 @@ function CommandPalette({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : close())}>
-      <DialogContent initialFocus={inputRef} className="gap-3 p-[18px] sm:max-w-[485px]">
+      <DialogContent
+        initialFocus={inputRef}
+        // no celular fica no topo (o teclado ocupa a parte de baixo da tela)
+        className="gap-3 p-[18px] sm:max-w-[485px] max-sm:inset-x-2.5 max-sm:top-[calc(10px+env(safe-area-inset-top))] max-sm:bottom-auto max-sm:w-auto max-sm:max-h-[calc(100dvh-env(safe-area-inset-top)-20px)] max-sm:rounded-[23px] max-sm:border-b max-sm:data-open:slide-in-from-top-4 max-sm:data-closed:slide-out-to-top-4"
+      >
         <div>
           <DialogTitle>Buscar ou registrar</DialogTitle>
           <DialogDescription className="mt-1">
@@ -306,7 +310,7 @@ function CommandPalette({
                       <small className="block truncate text-[0.6875rem] text-muted-foreground">{detail}</small>
                     </span>
                     {selected && (
-                      <span className="flex shrink-0 items-center gap-1 text-[0.625rem] font-bold text-muted-foreground">
+                      <span className="flex shrink-0 items-center gap-1 text-[0.6875rem] sm:text-[0.625rem] font-bold text-muted-foreground">
                         {option.type === "capture" ? (pending ? "Salvando…" : "Salvar") : "Abrir"}
                         <CornerDownLeftIcon className="size-3" aria-hidden />
                       </span>

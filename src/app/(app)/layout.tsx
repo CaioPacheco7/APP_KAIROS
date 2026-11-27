@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { ShellFooter } from "@/components/shell/client-bits";
 import { BottomDock, MobileDock, SectionTabs, SideDock } from "@/components/shell/docks";
+import { QuickAdd, QuickAddPlaceholder } from "@/components/shell/quick-add";
 import { Scenery } from "@/components/shell/scenery";
 import { TopBar } from "@/components/shell/top-bar";
 
@@ -20,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         Pular para o conteúdo
       </a>
 
-      <div className="mx-auto w-full max-w-[1380px] flex-1 px-3 pt-[11px] pb-[calc(84px+env(safe-area-inset-bottom))] md:w-[calc(100%-74px)] md:px-0 md:pt-6 md:pb-2 lg:w-[calc(100%-100px)]">
+      <div className="mx-auto w-full max-w-[1380px] flex-1 px-3 pt-[calc(11px+env(safe-area-inset-top))] pb-[calc(96px+env(safe-area-inset-bottom))] md:w-[calc(100%-74px)] md:px-0 md:pt-6 md:pb-2 lg:w-[calc(100%-100px)]">
         <TopBar />
 
         <div className="relative mt-[11px]">
@@ -43,7 +44,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ShellFooter />
       </div>
 
-      <MobileDock />
+      <MobileDock
+        action={
+          <Suspense fallback={<QuickAddPlaceholder />}>
+            <QuickAdd />
+          </Suspense>
+        }
+      />
     </div>
   );
 }

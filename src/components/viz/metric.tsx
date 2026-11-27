@@ -133,7 +133,7 @@ export function ChartTable({
 }) {
   return (
     <details className="mt-3 text-xs text-muted-foreground">
-      <summary className="w-fit cursor-pointer rounded-full font-semibold select-none hover:text-foreground">
+      <summary className="touch-hit w-fit cursor-pointer rounded-full font-semibold select-none hover:text-foreground">
         Ver como tabela
       </summary>
       <div className="mt-2 overflow-x-auto">

@@ -53,7 +53,7 @@ export function ActivityTable({ rows }: { rows: ActivityRow[] }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar movimentação"
             aria-label="Buscar movimentação"
-            className="h-[33px] min-w-0 flex-1 bg-transparent text-[0.75rem] outline-none placeholder:text-muted-foreground"
+            className="h-10 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:h-[33px] sm:text-[0.75rem]"
           />
         </label>
         <label className={field}>
@@ -62,7 +62,7 @@ export function ActivityTable({ rows }: { rows: ActivityRow[] }) {
             value={filter}
             onChange={(e) => setFilter(e.target.value as FilterId)}
             aria-label="Filtrar movimentações"
-            className="bg-transparent py-1 text-[0.75rem] font-semibold outline-none"
+            className="min-h-10 bg-transparent py-1 text-base font-semibold outline-none sm:min-h-0 sm:text-[0.75rem]"
           >
             {FILTERS.map((f) => (
               <option key={f.id} value={f.id} className="bg-popover text-popover-foreground">
@@ -76,7 +76,7 @@ export function ActivityTable({ rows }: { rows: ActivityRow[] }) {
       <div className="max-w-full overflow-x-auto">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left sm:table-auto">
           <thead>
-            <tr className="text-[0.625rem] font-extrabold text-muted-foreground">
+            <tr className="text-[0.6875rem] sm:text-[0.625rem] font-extrabold text-muted-foreground">
               <th scope="col" className="rounded-l-[8px] bg-inner px-2.5 py-2">Movimentação</th>
               <th scope="col" className="hidden bg-inner px-2.5 py-2 sm:table-cell">Categoria</th>
               <th scope="col" className="hidden bg-inner px-2.5 py-2 md:table-cell">Conta</th>
@@ -91,14 +91,14 @@ export function ActivityTable({ rows }: { rows: ActivityRow[] }) {
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate font-bold">{r.title}</span>
                     {r.pending && (
-                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-warning)_14%,transparent)] px-1.5 py-0.5 text-[0.5625rem] font-extrabold text-warn">
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--status-warning)_14%,transparent)] px-1.5 py-0.5 text-[0.6875rem] sm:text-[0.5625rem] font-extrabold text-warn">
                         <i aria-hidden className="size-1 rounded-full bg-current" />
                         agendada
                       </span>
                     )}
                   </span>
                   {/* no celular, os detalhes vêm numa linha de apoio */}
-                  <span className="mt-0.5 block truncate text-[0.625rem] text-muted-foreground sm:hidden">
+                  <span className="mt-0.5 block truncate text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground sm:hidden">
                     {r.category} · {r.account} · {r.date}
                   </span>
                 </td>

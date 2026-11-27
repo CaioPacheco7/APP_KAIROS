@@ -36,7 +36,7 @@ export function HabitRow({
           aria-label={doneToday ? `Desmarcar ${habit.name}` : `Marcar ${habit.name} como feito`}
           aria-pressed={doneToday}
           className={cn(
-            "grid size-9 place-items-center rounded-full border-2 transition-all duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            "relative grid size-9 place-items-center rounded-full border-2 transition-all duration-200 outline-none pointer-coarse:size-10 pointer-coarse:after:absolute pointer-coarse:after:-inset-1 pointer-coarse:after:rounded-full pointer-coarse:after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             doneToday
               ? "border-(--series-habit) bg-(--series-habit) text-[#fffaf0] shadow-[0_6px_16px_-8px_var(--series-habit)] dark:text-[#22180a]"
               : "border-input bg-inner hover:border-(--series-habit) hover:bg-gold-soft",

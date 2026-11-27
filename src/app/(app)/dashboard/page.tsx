@@ -261,7 +261,7 @@ export default async function DashboardPage({
         {/* Saldo (o número principal da tela) */}
         <Panel
           title="Saldo total"
-          action={<span className="rounded-[6px] bg-raised px-1.5 py-1 text-[0.625rem] font-extrabold">BRL</span>}
+          action={<span className="rounded-[6px] bg-raised px-1.5 py-1 text-[0.6875rem] sm:text-[0.625rem] font-extrabold">BRL</span>}
           headerClassName="items-center mb-2"
         >
           <p className="text-[clamp(2.4rem,3.9vw,3.55rem)] leading-[1.02] font-extrabold tracking-[-0.07em]">
@@ -293,7 +293,7 @@ export default async function DashboardPage({
             <ul aria-label="Saldo por conta" className="glass-inner flex rounded-[12px] px-0.5 py-2">
               {accounts.slice(0, 3).map((a, i) => (
                 <li key={a.id} className={cn("min-w-0 flex-1 px-2", i > 0 && "border-l border-line")}>
-                  <span className="block truncate text-[0.5625rem] font-semibold text-muted-foreground">{a.name}</span>
+                  <span className="block truncate text-[0.6875rem] sm:text-[0.5625rem] font-semibold text-muted-foreground">{a.name}</span>
                   <strong className="mt-1 block truncate text-[0.6875rem] font-extrabold"><Money>{formatBRL(balances.get(a.id) ?? 0)}</Money></strong>
                 </li>
               ))}
@@ -372,7 +372,7 @@ export default async function DashboardPage({
             title="Contas a pagar"
             subtitle={bills.length > 0 ? "Contas e faturas pendentes neste mês" : "Tudo pago neste mês"}
             action={
-              <Link href="/mes" aria-label="Abrir Meu mês" className="glass-inner grid size-9 place-items-center rounded-full transition-colors hover:bg-raised">
+              <Link href="/mes" aria-label="Abrir Meu mês" className="touch-hit glass-inner grid size-9 place-items-center rounded-full transition-colors hover:bg-raised">
                 <ArrowUpRightIcon className="size-4" aria-hidden />
               </Link>
             }
@@ -406,14 +406,14 @@ export default async function DashboardPage({
                       <span className="min-w-0 flex-1">
                         <strong className="block truncate text-[0.75rem] font-bold">
                           {b.href ? (
-                            <Link href={b.href} className="underline-offset-2 hover:underline">
+                            <Link href={b.href} className="touch-hit underline-offset-2 hover:underline">
                               {b.description}
                             </Link>
                           ) : (
                             (b.description ?? "Conta")
                           )}
                         </strong>
-                        <small className={cn("block text-[0.625rem] font-semibold", state === "overdue" ? "text-risk" : "text-muted-foreground")}>
+                        <small className={cn("block text-[0.6875rem] sm:text-[0.625rem] font-semibold", state === "overdue" ? "text-risk" : "text-muted-foreground")}>
                           {state === "overdue"
                             ? `Atrasada · venceu ${formatDayMonth(b.date)}`
                             : state === "today"
@@ -433,7 +433,7 @@ export default async function DashboardPage({
             subtitle={goals.length > 0 ? "Quanto já foi guardado ou pago" : "Conquistar algo ou sair de uma dívida"}
             className="md:col-span-2 xl:col-span-1"
             action={
-              <Link href="/planejar" aria-label="Abrir Planejar" className="glass-inner grid size-9 place-items-center rounded-full transition-colors hover:bg-raised">
+              <Link href="/planejar" aria-label="Abrir Planejar" className="touch-hit glass-inner grid size-9 place-items-center rounded-full transition-colors hover:bg-raised">
                 <ArrowUpRightIcon className="size-4" aria-hidden />
               </Link>
             }
@@ -449,7 +449,7 @@ export default async function DashboardPage({
                     <div className="flex items-baseline justify-between gap-2 text-[0.75rem]">
                       <span className="min-w-0 truncate font-bold">
                         {g.title}
-                        <span className="ml-1.5 text-[0.625rem] font-semibold text-muted-foreground">
+                        <span className="ml-1.5 text-[0.6875rem] sm:text-[0.625rem] font-semibold text-muted-foreground">
                           {g.kind === "debt" ? "dívida" : "conquista"}
                         </span>
                       </span>
@@ -468,7 +468,7 @@ export default async function DashboardPage({
                         style={{ width: `${Math.max(g.ratio * 100, 2)}%`, ["--d" as string]: `${220 + i * 60}ms` }}
                       />
                     </div>
-                    <p className="text-[0.625rem] font-semibold text-muted-foreground tabular-nums">
+                    <p className="text-[0.6875rem] sm:text-[0.625rem] font-semibold text-muted-foreground tabular-nums">
                       <Money>{formatBRL(g.done)}</Money> de <Money>{formatBRL(g.target)}</Money>
                     </p>
                   </li>
@@ -483,7 +483,7 @@ export default async function DashboardPage({
           title="Últimas movimentações"
           className="md:col-span-2"
           action={
-            <Link href="/transacoes" className="text-[0.6875rem] font-bold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+            <Link href="/transacoes" className="touch-hit text-[0.6875rem] font-bold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
               Ver todas
             </Link>
           }
@@ -512,7 +512,7 @@ export default async function DashboardPage({
           action={
             <Link
               href="/mes#orcamento"
-              className="text-[0.6875rem] font-bold whitespace-nowrap text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              className="touch-hit text-[0.6875rem] font-bold whitespace-nowrap text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
               {budget.lines.length > 0 ? "Orçamento" : "Definir limites"}
             </Link>

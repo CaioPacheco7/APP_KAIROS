@@ -18,7 +18,7 @@ export default async function Page() {
       <div className="grid grid-cols-1 gap-5">
         <Link
           href="/planejar"
-          className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="touch-hit flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" aria-hidden /> Planejar
         </Link>

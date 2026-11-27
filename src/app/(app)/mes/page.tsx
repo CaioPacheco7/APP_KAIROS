@@ -195,7 +195,7 @@ export default async function MesPage({
                   <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-center leading-none">
                     <span>
                       <span className="block font-display text-xl tabular-nums">{r.day_of_month}</span>
-                      <span className="block text-[0.5625rem] tracking-widest text-muted-foreground uppercase">dia</span>
+                      <span className="block text-[0.6875rem] sm:text-[0.5625rem] tracking-widest text-muted-foreground uppercase">dia</span>
                     </span>
                   </span>
                   <div className="min-w-0 flex-1">
@@ -256,7 +256,7 @@ function InstanceRow({ item, today }: { item: Instance; today: string }) {
         ) : (
           <span>
             <span className="block font-display text-xl tabular-nums">{day}</span>
-            <span className="block text-[0.5625rem] tracking-widest uppercase opacity-70">dia</span>
+            <span className="block text-[0.6875rem] sm:text-[0.5625rem] tracking-widest uppercase opacity-70">dia</span>
           </span>
         )}
       </span>

@@ -47,7 +47,7 @@ export function HabitWeek({ totals, today }: { totals: DayTotal[]; today: string
                   style={{ height: `${ratio * 100}%`, ["--d" as string]: `${160 + i * 40}ms` }}
                 />
               </span>
-              <span aria-hidden className={cn("text-[0.625rem] text-muted-foreground", d.date === today && "font-extrabold text-foreground")}>
+              <span aria-hidden className={cn("text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground", d.date === today && "font-extrabold text-foreground")}>
                 {dayLabel(d.date)}
               </span>
             </button>

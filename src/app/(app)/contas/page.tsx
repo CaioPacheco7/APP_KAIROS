@@ -70,7 +70,7 @@ export default async function ContasPage() {
               title="Saldo total"
               subtitle={`${accounts.length} ${accounts.length === 1 ? "conta ativa" : "contas ativas"}`}
               className="animate-rise relative overflow-hidden"
-              action={<span className="rounded-[6px] bg-raised px-1.5 py-1 text-[0.625rem] font-extrabold">BRL</span>}
+              action={<span className="rounded-[6px] bg-raised px-1.5 py-1 text-[0.6875rem] sm:text-[0.625rem] font-extrabold">BRL</span>}
             >
               <Hourglass className="pointer-events-none absolute -right-5 -bottom-10 h-56 text-gold-fill opacity-[0.06]" />
               <p className="relative text-[clamp(2.6rem,5.2vw,4.4rem)] leading-[1.02] font-extrabold tracking-[-0.07em]">

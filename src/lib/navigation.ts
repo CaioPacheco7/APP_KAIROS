@@ -84,7 +84,7 @@ export function routineTab(raw: string | string[] | null | undefined): RoutineTa
 const FINANCE_SHORT: Record<string, string> = {
   "/dashboard": "Geral",
   "/mes": "Mês",
-  "/transacoes": "Transações",
+  "/transacoes": "Extrato",
   "/contas": "Contas",
   "/cartoes": "Cartões",
   "/planejar": "Planejar",

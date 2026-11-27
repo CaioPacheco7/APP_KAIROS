@@ -223,7 +223,7 @@ function CardTile({
                 style={{ width: `${Math.max(Math.min(usage.ratio, 1) * 100, 2)}%` }}
               />
             </div>
-            <p className="text-[0.625rem] text-muted-foreground">
+            <p className="text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground">
               de <Money>{formatBRL(card.credit_limit)}</Money>, contando as parcelas futuras
             </p>
           </>
@@ -251,7 +251,7 @@ function CardTile({
         {showLink && !active && (
           <Link
             href={`/cartoes?cartao=${card.id}`}
-            className="inline-flex min-h-8 items-center rounded-full px-3 text-[0.8125rem] font-bold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="touch-hit inline-flex min-h-8 items-center rounded-full px-3 text-[0.8125rem] font-bold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             Ver faturas
           </Link>
@@ -328,7 +328,7 @@ async function InvoiceDetail({
                   <span className="text-[0.8125rem] font-bold tabular-nums">
                     <Money>{formatBRL(inv.charges)}</Money>
                   </span>
-                  <span className={cn("flex items-center gap-1 text-[0.625rem] font-bold", !isSelected && tone)}>
+                  <span className={cn("flex items-center gap-1 text-[0.6875rem] sm:text-[0.625rem] font-bold", !isSelected && tone)}>
                     <Icon className="size-3" aria-hidden />
                     {INVOICE_STATE_LABEL[inv.state]}
                   </span>

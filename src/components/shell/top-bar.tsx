@@ -49,7 +49,7 @@ export function TopBar() {
           <strong className="block truncate text-[0.75rem] leading-[1.1] font-extrabold tracking-[0.17em]">
             KAIROS<span className="sr-only">, ir para o início</span>
           </strong>
-          <small className="mt-[3px] block truncate text-[0.625rem] text-muted-foreground">
+          <small className="mt-[3px] block truncate text-[0.6875rem] sm:text-[0.625rem] text-muted-foreground">
             <TodayLabel />
           </small>
         </span>
@@ -62,6 +62,8 @@ export function TopBar() {
       </div>
 
       <div className="col-start-2 row-start-1 flex items-center justify-end gap-1.5 md:col-start-3">
+        {/* no celular o lançamento fica no "+" da doca de baixo */}
+        <div className="hidden md:contents">
         <FinanceOnly>
           <Suspense
             fallback={
@@ -73,6 +75,7 @@ export function TopBar() {
             <NewTransaction />
           </Suspense>
         </FinanceOnly>
+        </div>
         <PrivacyToggle className={iconButtonClass} />
         <ThemeToggle className={iconButtonClass} />
         <Suspense

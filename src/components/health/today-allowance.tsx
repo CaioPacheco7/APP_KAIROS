@@ -37,7 +37,7 @@ export function TodayAllowance({ allowance, className }: { allowance: DailyAllow
             {noRoom ? "Sem folga no mês" : over ? "Você passou do limite de hoje em" : "Hoje você ainda pode gastar"}
           </span>
         </span>
-        <span className="shrink-0 rounded-full bg-[rgb(255_250_235/34%)] px-2 py-0.5 text-[0.625rem] max-sm:hidden">
+        <span className="shrink-0 rounded-full bg-[rgb(255_250_235/34%)] px-2 py-0.5 text-[0.6875rem] sm:text-[0.625rem] max-sm:hidden">
           {daysLeft === 1 ? "último dia do mês" : `faltam ${daysLeft} dias`}
         </span>
       </div>

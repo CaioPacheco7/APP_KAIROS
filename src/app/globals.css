@@ -353,6 +353,21 @@ html[data-privacy="on"] .money {
   }
 }
 
+/*
+ * Toque: links e controles pequenos ganham uma área invisível maior no
+ * celular (o dedo precisa de ~44 px), sem mudar o visual nem o layout.
+ */
+@utility touch-hit {
+  @media (pointer: coarse) {
+    position: relative;
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -12px -6px;
+    }
+  }
+}
+
 /* ---------------------------------------------------------------------
    Movimento (sempre respeita "reduzir movimento")
    --------------------------------------------------------------------- */

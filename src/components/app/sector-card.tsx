@@ -37,7 +37,7 @@ export function SectorCard({
         {href && (
           <Link
             href={href}
-            className="glass-inner flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[0.6875rem] font-bold whitespace-nowrap transition-colors outline-none hover:bg-raised focus-visible:outline-2 focus-visible:outline-ring"
+            className="touch-hit glass-inner flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[0.6875rem] font-bold whitespace-nowrap transition-colors outline-none hover:bg-raised focus-visible:outline-2 focus-visible:outline-ring"
           >
             {hrefLabel}
             <ArrowUpRightIcon className="size-3.5" aria-hidden />
