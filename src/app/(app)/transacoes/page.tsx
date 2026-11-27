@@ -12,6 +12,7 @@ import { Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Metric } from "@/components/viz/metric";
 import { formatLongDate, monthBounds, parseMonth } from "@/lib/dates";
+import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -190,7 +191,7 @@ export default async function TransacoesPage({
                   <h2 className="text-[0.8125rem] font-extrabold tracking-[-0.01em] first-letter:uppercase">{formatLongDate(date)}</h2>
                   <span className={cn("shrink-0 text-xs font-bold tabular-nums", dayTotal > 0 ? "text-money-in" : "text-muted-foreground")}>
                     {dayTotal > 0 ? "+ " : dayTotal < 0 ? "− " : ""}
-                    {formatBRL(Math.abs(dayTotal))}
+                    <Money>{formatBRL(Math.abs(dayTotal))}</Money>
                   </span>
                 </div>
                 <Card size="sm">

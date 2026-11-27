@@ -147,3 +147,36 @@ export function assessHealth(input: HealthInput): Health {
 
   return { level, label: LABEL[level], ratio, remaining, perDay, projected, greenMax, yellowMax, message };
 }
+
+/** "Quanto ainda posso gastar hoje" (ideia do "In My Pocket" do PocketGuard). */
+export type DailyAllowance = {
+  /** limite do dia: a sobra do mês no começo do dia ÷ dias que faltam (contando hoje) */
+  limit: number;
+  /** gastos do dia a dia lançados com a data de hoje */
+  spent: number;
+  /** limite − gasto; negativo = passou do limite de hoje */
+  left: number;
+  /** dias que faltam no mês, contando hoje */
+  daysLeft: number;
+};
+
+/**
+ * Limite de gastos de hoje. O limite é calculado com a sobra do mês como
+ * estava no começo do dia, para não encolher a cada gasto lançado hoje; os
+ * gastos de hoje saem dele. Só existe no mês em andamento e com renda informada.
+ * Contas fixas já estão em `committed` desde o começo do mês.
+ */
+export function dailyAllowance(input: {
+  income: number;
+  committed: number;
+  spentToday: number;
+  month: string;
+  today: string;
+}): DailyAllowance | null {
+  const { income, committed, spentToday, month, today } = input;
+  if (income <= 0 || !today.startsWith(month)) return null;
+  const daysLeft = daysInMonth(month) - Number(today.slice(8, 10)) + 1;
+  const startOfDay = income - committed + spentToday;
+  const limit = startOfDay > 0 ? Math.floor(startOfDay / daysLeft) : 0;
+  return { limit, spent: spentToday, left: limit - spentToday, daysLeft };
+}

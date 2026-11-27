@@ -8,8 +8,10 @@ import {
 } from "lucide-react";
 import { connection } from "next/server";
 import { AccountDialog } from "@/components/accounts/account-dialog";
+import { ReservePanel } from "@/components/accounts/reserve-panel";
 import { EmptyState } from "@/components/app/empty-state";
 import { IconChip, type Tone } from "@/components/app/icon-chip";
+import { MoneyText } from "@/components/app/money";
 import { PageHeader } from "@/components/app/page-header";
 import { Panel } from "@/components/app/panel";
 import { Hourglass } from "@/components/brand/hourglass";
@@ -18,7 +20,8 @@ import { Count } from "@/components/viz/count";
 import { formatBRL } from "@/lib/money";
 import { accountColor, splitShares } from "@/lib/viz";
 import { archiveAccountAction } from "@/server/accounts";
-import { getAccounts, getBalances } from "@/server/queries";
+import { getMonthSnapshot, getReserve } from "@/server/health";
+import { getAccounts, getBalances, getFormOptions } from "@/server/queries";
 import { ACCOUNT_TYPE_LABEL, type AccountType } from "@/types/database";
 
 export const metadata = { title: "Contas · KAIROS" };
@@ -34,10 +37,15 @@ const pct = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
 
 export default async function ContasPage() {
   await connection();
-  const [accounts, balances] = await Promise.all([getAccounts(), getBalances()]);
+  const [accounts, balances, { today }] = await Promise.all([getAccounts(), getBalances(), getFormOptions()]);
 
   const rows = accounts.map((a, i) => ({ ...a, balance: balances.get(a.id) ?? 0, color: accountColor(i) }));
   const total = rows.reduce((sum, r) => sum + r.balance, 0);
+  const month = today.slice(0, 7);
+  const reserve =
+    accounts.length > 0
+      ? await getReserve(month, total, (await getMonthSnapshot(month, today)).committed)
+      : null;
   const shares = splitShares(rows.map((r) => ({ key: r.id, label: r.name, value: r.balance, color: r.color })));
   const positiveTotal = shares.reduce((s, x) => s + x.value, 0);
 
@@ -56,37 +64,40 @@ export default async function ContasPage() {
         </EmptyState>
       ) : (
         <>
-          {/* Saldo total + como ele se divide entre as contas */}
-          <Panel
-            title="Saldo total"
-            subtitle={`${accounts.length} ${accounts.length === 1 ? "conta ativa" : "contas ativas"}`}
-            className="animate-rise relative"
-            action={<span className="rounded-[6px] bg-raised px-1.5 py-1 text-[0.625rem] font-extrabold">BRL</span>}
-          >
-            <Hourglass className="pointer-events-none absolute -right-5 -bottom-10 h-56 text-gold-fill opacity-[0.06]" />
-            <p className="relative text-[clamp(2.6rem,5.2vw,4.4rem)] leading-[1.02] font-extrabold tracking-[-0.07em]">
-              <Count value={total} />
-            </p>
-            {shares.length > 1 && (
-              <div className="relative mt-4 grid gap-1.5">
-                {/* barra fina de divisão: sem texto; nomes e valores estão nos cartões abaixo */}
-                <div
-                  role="img"
-                  aria-label={`Divisão do saldo: ${shares
-                    .map((s) => `${s.label} ${pct.format((s.value / positiveTotal) * 100)}%`)
-                    .join(", ")}`}
-                  className="animate-grow-x flex h-2 gap-[2px] overflow-hidden rounded-full"
-                >
-                  {shares.map((s) => (
-                    <span key={s.key} className="h-full min-w-[3px]" style={{ flexGrow: s.value, flexBasis: 0, background: s.color }} />
-                  ))}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+            {/* Saldo total + como ele se divide entre as contas */}
+            <Panel
+              title="Saldo total"
+              subtitle={`${accounts.length} ${accounts.length === 1 ? "conta ativa" : "contas ativas"}`}
+              className="animate-rise relative overflow-hidden"
+              action={<span className="rounded-[6px] bg-raised px-1.5 py-1 text-[0.625rem] font-extrabold">BRL</span>}
+            >
+              <Hourglass className="pointer-events-none absolute -right-5 -bottom-10 h-56 text-gold-fill opacity-[0.06]" />
+              <p className="relative text-[clamp(2.6rem,5.2vw,4.4rem)] leading-[1.02] font-extrabold tracking-[-0.07em]">
+                <Count value={total} />
+              </p>
+              {shares.length > 1 && (
+                <div className="relative mt-4 grid gap-1.5">
+                  {/* barra fina de divisão: sem texto; nomes e valores estão nos cartões abaixo */}
+                  <div
+                    role="img"
+                    aria-label={`Divisão do saldo: ${shares
+                      .map((s) => `${s.label} ${pct.format((s.value / positiveTotal) * 100)}%`)
+                      .join(", ")}`}
+                    className="animate-grow-x flex h-2 gap-[2px] overflow-hidden rounded-full"
+                  >
+                    {shares.map((s) => (
+                      <span key={s.key} className="h-full min-w-[3px]" style={{ flexGrow: s.value, flexBasis: 0, background: s.color }} />
+                    ))}
+                  </div>
+                  <p className="text-[0.6875rem] text-muted-foreground">
+                    Como o saldo se divide: cada cor é uma conta (o quadradinho ao lado do nome).
+                  </p>
                 </div>
-                <p className="text-[0.6875rem] text-muted-foreground">
-                  Como o saldo se divide: cada cor é uma conta (o quadradinho ao lado do nome).
-                </p>
-              </div>
-            )}
-          </Panel>
+              )}
+            </Panel>
+            {reserve && <ReservePanel reserve={reserve} className="animate-rise" />}
+          </div>
 
           <ul className="stagger grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {rows.map((account) => {
@@ -130,7 +141,7 @@ export default async function ContasPage() {
                         {share !== null
                           ? `${pct.format(share)}% do saldo`
                           : account.balance < 0
-                            ? `Negativa em ${formatBRL(Math.abs(account.balance))}`
+                            ? <MoneyText>{`Negativa em ${formatBRL(Math.abs(account.balance))}`}</MoneyText>
                             : "Sem saldo"}
                       </p>
                     </div>

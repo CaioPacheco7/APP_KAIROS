@@ -17,6 +17,7 @@ import { Panel } from "@/components/app/panel";
 import { ProgressRing } from "@/components/app/progress-ring";
 import { HabitComposer } from "@/components/routine/habit-composer";
 import { HabitRow } from "@/components/routine/habit-row";
+import { HabitYearMap } from "@/components/routine/habit-year";
 import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
 import { TaskCard } from "@/components/routine/task-card";
@@ -29,7 +30,7 @@ import { routineTab, type RoutineTab } from "@/lib/navigation";
 import { LANES, completionRate, laneFor, weekTotals, type Lane } from "@/lib/routine";
 import { createClient } from "@/lib/supabase/server";
 import { capitalize, cn } from "@/lib/utils";
-import { getHabitBoard, summarizeToday } from "@/server/habits-board";
+import { getHabitBoard, getHabitYear, summarizeToday } from "@/server/habits-board";
 import { getFormOptions } from "@/server/queries";
 
 export const metadata = { title: "Rotina · KAIROS" };
@@ -79,8 +80,9 @@ export default async function RotinaPage({
 
 async function Today({ today }: { today: string }) {
   const db = await createClient();
-  const [board, tasksRes] = await Promise.all([
+  const [board, year, tasksRes] = await Promise.all([
     getHabitBoard(today),
+    getHabitYear(today),
     db
       .from("tasks")
       .select("id, kind, title, due_date, remind_at, priority, status")
@@ -218,6 +220,16 @@ async function Today({ today }: { today: string }) {
           )}
         </Panel>
       </div>
+
+      {board.length > 0 && (
+        <Panel
+          title="Seu ano nos hábitos"
+          subtitle="Cada quadradinho é um dia: quanto mais forte o dourado, mais hábitos previstos você fez"
+          className="animate-rise"
+        >
+          <HabitYearMap weeks={year} />
+        </Panel>
+      )}
     </div>
   );
 }

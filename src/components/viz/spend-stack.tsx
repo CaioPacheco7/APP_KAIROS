@@ -44,7 +44,7 @@ export function SpendStack({ columns, height = 150 }: { columns: SpendColumn[]; 
         />
         {a && (
           <span className="text-[0.6875rem] font-extrabold whitespace-nowrap tabular-nums" aria-hidden>
-            {capitalize(a.label)} · {formatBRL(a.fixed + a.daily)}
+            {capitalize(a.label)} · <span className="money">{formatBRL(a.fixed + a.daily)}</span>
           </span>
         )}
       </div>
@@ -52,7 +52,7 @@ export function SpendStack({ columns, height = 150 }: { columns: SpendColumn[]; 
       <div className="grid grid-cols-[40px_minmax(0,1fr)]">
         <div className="relative text-[0.625rem] text-muted-foreground tabular-nums" style={{ height }} aria-hidden>
           {scale.ticks.map((t) => (
-            <span key={t} className="absolute right-2 -translate-y-1/2" style={{ top: `${(1 - t / scale.max) * 100}%` }}>
+            <span key={t} className="money absolute right-2 -translate-y-1/2" style={{ top: `${(1 - t / scale.max) * 100}%` }}>
               {tickLabel(t, scale.max)}
             </span>
           ))}

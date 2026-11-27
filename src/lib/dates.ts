@@ -97,6 +97,21 @@ export function addDays(iso: string, days: number): string {
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
+/** Dias de `from` até `to` (positivo se `to` vem depois). */
+export function daysBetween(from: string, to: string): number {
+  const utc = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((utc(to) - utc(from)) / 86_400_000);
+}
+
+/** Quantos dias tem o mês ("2026-02" -> 28). */
+export function daysInMonth(month: string): number {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
 /** "2026-11-14T12:00:00Z" -> "09:00" (hora no fuso de São Paulo) */
 export function formatTimeBR(isoTimestamp: string): string {
   return new Intl.DateTimeFormat("pt-BR", {

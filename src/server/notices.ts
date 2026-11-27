@@ -1,4 +1,5 @@
 import { addDays } from "@/lib/dates";
+import { isSubscriptionCategory } from "@/lib/finance/subscriptions";
 import {
   billNotice,
   sortNotices,
@@ -8,11 +9,12 @@ import {
   type TaskInput,
 } from "@/lib/notices";
 import { createClient } from "@/lib/supabase/server";
+import { getCategoryNames } from "./queries";
 
 /** Avisos do sino: tarefas/lembretes vencidos ou de hoje e contas a pagar próximas. */
 export async function getNotices(today: string): Promise<Notice[]> {
   const db = await createClient();
-  const [tasksRes, billsRes] = await Promise.all([
+  const [tasksRes, billsRes, categoryNames] = await Promise.all([
     db
       .from("tasks")
       .select("id, kind, title, due_date, remind_at")
@@ -24,16 +26,25 @@ export async function getNotices(today: string): Promise<Notice[]> {
       .limit(8),
     db
       .from("transactions")
-      .select("id, amount, date, description")
+      .select("id, amount, date, description, category_id")
       .is("deleted_at", null)
       .eq("type", "expense")
       .eq("status", "pending")
       .lte("date", addDays(today, 3))
       .order("date", { ascending: true })
       .limit(8),
+    getCategoryNames(),
   ]);
 
   const tasks = ((tasksRes.data ?? []) as TaskInput[]).map((t) => taskNotice(t, today));
-  const bills = ((billsRes.data ?? []) as BillInput[]).map((b) => billNotice(b, today));
+  const bills = ((billsRes.data ?? []) as (BillInput & { category_id: string | null })[]).map((b) =>
+    billNotice(
+      {
+        ...b,
+        subscription: b.category_id !== null && isSubscriptionCategory(categoryNames.get(b.category_id)),
+      },
+      today,
+    ),
+  );
   return sortNotices([...tasks, ...bills]);
 }

@@ -17,6 +17,26 @@ export function formatBRL(cents: number): string {
   return brl.format(cents / 100);
 }
 
+/** Um valor "R$ 1.234,56" dentro de um texto (o espaço do Intl é o U+00A0). */
+const AMOUNT_IN_TEXT = /R\$[\s ]?\d{1,3}(?:\.\d{3})*(?:,\d{2})?/g;
+
+/**
+ * Separa os valores em reais de um texto, para poder escondê-los no modo
+ * "ocultar valores": "Sobram R$ 50,00." -> [texto, valor, texto].
+ */
+export function splitMoney(text: string): Array<{ text: string; money: boolean }> {
+  const parts: Array<{ text: string; money: boolean }> = [];
+  let last = 0;
+  for (const match of text.matchAll(AMOUNT_IN_TEXT)) {
+    const at = match.index ?? 0;
+    if (at > last) parts.push({ text: text.slice(last, at), money: false });
+    parts.push({ text: match[0], money: true });
+    last = at + match[0].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last), money: false });
+  return parts;
+}
+
 /** 123456 -> "1,2 mil" (para eixos de gráfico) */
 export function formatCompact(cents: number): string {
   return brlCompact.format(cents / 100);

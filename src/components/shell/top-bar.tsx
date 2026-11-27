@@ -13,6 +13,7 @@ import { AskBar, AskButton } from "./ask-bar";
 import { TodayLabel } from "./client-bits";
 import { FinanceOnly } from "./finance-only";
 import { NoticesButton } from "./notices-button";
+import { PrivacyToggle } from "./privacy-toggle";
 import { iconButtonClass } from "./styles";
 
 async function AskLoader() {
@@ -43,7 +44,8 @@ export function TopBar() {
           loading="eager"
           className="shrink-0 drop-shadow-[0_2px_7px_rgb(var(--glass-shadow)/22%)]"
         />
-        <span className="min-w-0">
+        {/* em telas bem estreitas fica só o logo (o nome continua para leitores de tela) */}
+        <span className="min-w-0 max-[400px]:sr-only">
           <strong className="block truncate text-[0.75rem] leading-[1.1] font-extrabold tracking-[0.17em]">
             KAIROS<span className="sr-only">, ir para o início</span>
           </strong>
@@ -71,6 +73,7 @@ export function TopBar() {
             <NewTransaction />
           </Suspense>
         </FinanceOnly>
+        <PrivacyToggle className={iconButtonClass} />
         <ThemeToggle className={iconButtonClass} />
         <Suspense
           fallback={

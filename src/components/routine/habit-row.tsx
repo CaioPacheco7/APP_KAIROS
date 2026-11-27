@@ -1,6 +1,6 @@
 import { ArchiveIcon, CheckIcon, FlameIcon } from "lucide-react";
 import { ConfirmButton } from "@/components/confirm-button";
-import { WEEKDAY_SHORT } from "@/lib/habits";
+import { strengthLabel, WEEKDAY_SHORT } from "@/lib/habits";
 import { cn } from "@/lib/utils";
 import { archiveHabitAction, toggleHabitAction } from "@/server/habits";
 import type { HabitCard } from "@/server/habits-board";
@@ -70,6 +70,22 @@ export function HabitRow({
                 )}
               />
             ))}
+          </span>
+          {/* força: cai devagar com uma falta, em vez de zerar como a sequência */}
+          <span
+            className="flex items-center gap-1.5"
+            title="Força do hábito: sobe com a constância e cai devagar quando você falha, sem zerar"
+          >
+            <span aria-hidden className="h-1.5 w-7 overflow-hidden rounded-full bg-gold-soft">
+              <span
+                className="block h-full rounded-full bg-(--series-habit)"
+                style={{ width: `${Math.max(Math.round(habit.strength * 100), habit.strength > 0 ? 6 : 0)}%` }}
+              />
+            </span>
+            <span>
+              força {Math.round(habit.strength * 100)}%
+              <span className="max-sm:sr-only"> · {strengthLabel(habit.strength)}</span>
+            </span>
           </span>
           {habit.weekdays.length < 7 && (
             <span>{habit.weekdays.map((w) => WEEKDAY_SHORT[w - 1]).join(", ")}</span>

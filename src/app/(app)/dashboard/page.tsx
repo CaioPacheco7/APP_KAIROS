@@ -33,6 +33,7 @@ import {
   parseMonth,
   shiftMonth,
 } from "@/lib/dates";
+import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { dueState } from "@/lib/notices";
 import { createClient } from "@/lib/supabase/server";
@@ -240,7 +241,7 @@ export default async function DashboardPage({
               )}
             >
               {result >= 0 ? <ArrowUpRightIcon className="size-3" aria-hidden /> : <ArrowDownLeftIcon className="size-3" aria-hidden />}
-              {`${result >= 0 ? "+ " : "− "}${formatBRL(Math.abs(result))}`}
+              {result >= 0 ? "+ " : "− "}<Money>{formatBRL(Math.abs(result))}</Money>
             </span>
             <span>{result >= 0 ? "sobrou" : "faltou"} em {monthName(month)}</span>
           </div>
@@ -257,7 +258,7 @@ export default async function DashboardPage({
               {accounts.slice(0, 3).map((a, i) => (
                 <li key={a.id} className={cn("min-w-0 flex-1 px-2", i > 0 && "border-l border-line")}>
                   <span className="block truncate text-[0.5625rem] font-semibold text-muted-foreground">{a.name}</span>
-                  <strong className="mt-1 block truncate text-[0.6875rem] font-extrabold">{formatBRL(balances.get(a.id) ?? 0)}</strong>
+                  <strong className="mt-1 block truncate text-[0.6875rem] font-extrabold"><Money>{formatBRL(balances.get(a.id) ?? 0)}</Money></strong>
                 </li>
               ))}
             </ul>
@@ -272,7 +273,7 @@ export default async function DashboardPage({
             value={income}
             footer={
               incomePending > 0 ? (
-                <span>+ {formatBRL(incomePending)} a receber</span>
+                <span>+ <Money>{formatBRL(incomePending)}</Money> a receber</span>
               ) : (
                 <Delta change={pctChange(income, prevIncome)} goodWhen="up" vs={`vs ${monthName(prevMonth)}`} />
               )
@@ -284,7 +285,7 @@ export default async function DashboardPage({
             value={expense}
             footer={
               expensePending > 0 ? (
-                <span>+ {formatBRL(expensePending)} a pagar</span>
+                <span>+ <Money>{formatBRL(expensePending)}</Money> a pagar</span>
               ) : (
                 <Delta change={pctChange(expense, prevExpense)} goodWhen="down" vs={`vs ${monthName(prevMonth)}`} />
               )
@@ -370,7 +371,7 @@ export default async function DashboardPage({
                               : `Vence ${formatDayMonth(b.date)}`}
                         </small>
                       </span>
-                      <span className="shrink-0 text-[0.75rem] font-extrabold tabular-nums">{formatBRL(Number(b.amount))}</span>
+                      <span className="shrink-0 text-[0.75rem] font-extrabold tabular-nums"><Money>{formatBRL(Number(b.amount))}</Money></span>
                     </li>
                   );
                 })}
@@ -418,7 +419,7 @@ export default async function DashboardPage({
                       />
                     </div>
                     <p className="text-[0.625rem] font-semibold text-muted-foreground tabular-nums">
-                      {formatBRL(g.done)} de {formatBRL(g.target)}
+                      <Money>{formatBRL(g.done)}</Money> de <Money>{formatBRL(g.target)}</Money>
                     </p>
                   </li>
                 ))}

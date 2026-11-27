@@ -1,17 +1,21 @@
-import { assessHealth, type Health } from "@/lib/finance/health";
-import { monthBounds } from "@/lib/dates";
+import { assessHealth, dailyAllowance, type DailyAllowance, type Health } from "@/lib/finance/health";
+import { reserveMonths, type Reserve } from "@/lib/finance/reserve";
+import { monthBounds, shiftMonth } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import { ensureRecurring, getProfile } from "./queries";
 
 type Row = {
   type: "income" | "expense";
   amount: number;
+  date: string;
   status: "pending" | "settled";
   recurrence_id: string | null;
 };
 
 export type MonthSnapshot = {
   health: Health;
+  /** "quanto ainda posso gastar hoje" (só no mês em andamento) */
+  allowance: DailyAllowance | null;
   income: number;
   incomeSettled: number;
   committed: number;
@@ -31,7 +35,7 @@ export async function getMonthSnapshot(
   const [{ data }, profile] = await Promise.all([
     db
       .from("transactions")
-      .select("type, amount, status, recurrence_id")
+      .select("type, amount, date, status, recurrence_id")
       .is("deleted_at", null)
       .in("type", ["income", "expense"])
       .gte("date", start)
@@ -44,6 +48,7 @@ export async function getMonthSnapshot(
   let committed = 0;
   let expenseSettled = 0;
   let fixed = 0;
+  let spentToday = 0;
   for (const row of (data ?? []) as Row[]) {
     const amount = Number(row.amount);
     if (row.type === "income") {
@@ -53,6 +58,7 @@ export async function getMonthSnapshot(
       committed += amount;
       if (row.status === "settled") expenseSettled += amount;
       if (row.recurrence_id) fixed += amount;
+      else if (row.date === today) spentToday += amount;
     }
   }
 
@@ -66,6 +72,29 @@ export async function getMonthSnapshot(
     greenMax: profile?.health_green_max,
     yellowMax: profile?.health_yellow_max,
   });
+  const allowance = dailyAllowance({ income, committed, spentToday, month, today });
 
-  return { health, income, incomeSettled, committed, expenseSettled, fixed };
+  return { health, allowance, income, incomeSettled, committed, expenseSettled, fixed };
+}
+
+/**
+ * Reserva em meses: o saldo de hoje contra o gasto médio dos 3 meses
+ * anteriores (pagos + agendados). Sem histórico, usa o mês atual.
+ */
+export async function getReserve(
+  month: string,
+  balance: number,
+  currentCommitted: number,
+): Promise<Reserve | null> {
+  const db = await createClient();
+  const { data } = await db
+    .from("v_monthly_summary")
+    .select("month, expense_settled, expense_pending")
+    .gte("month", `${shiftMonth(month, -3)}-01`)
+    .lt("month", `${month}-01`)
+    .order("month", { ascending: true });
+  const past = ((data ?? []) as { expense_settled: number; expense_pending: number }[]).map(
+    (r) => Number(r.expense_settled) + Number(r.expense_pending),
+  );
+  return reserveMonths(balance, past, currentCommitted);
 }
