@@ -14,6 +14,7 @@ export function TransactionItem({
   transaction: t,
   accountName,
   toAccountName,
+  cardName,
   categoryName,
   showDate = true,
   actions,
@@ -21,10 +22,12 @@ export function TransactionItem({
 }: {
   transaction: Pick<
     Transaction,
-    "id" | "type" | "amount" | "date" | "status" | "description"
+    "id" | "type" | "amount" | "date" | "status" | "description" | "installment_number" | "installment_total"
   >;
   accountName?: string;
   toAccountName?: string;
+  /** compra no cartão ou pagamento de fatura */
+  cardName?: string;
   categoryName?: string | null;
   showDate?: boolean;
   actions?: React.ReactNode;
@@ -38,9 +41,10 @@ export function TransactionItem({
   const meta = [
     showDate ? formatDayMonth(t.date) : null,
     t.type === "transfer"
-      ? `${accountName ?? "Conta"} → ${toAccountName ?? "Conta"}`
+      ? `${accountName ?? "Conta"} → ${cardName ? `cartão ${cardName}` : (toAccountName ?? "Conta")}`
       : (categoryName ?? "Sem categoria"),
-    t.type !== "transfer" && accountName ? accountName : null,
+    t.type !== "transfer" ? (cardName ? `cartão ${cardName}` : (accountName ?? null)) : null,
+    t.installment_number && t.installment_total ? `parcela ${t.installment_number}/${t.installment_total}` : null,
   ].filter(Boolean);
 
   return (
@@ -53,7 +57,7 @@ export function TransactionItem({
         className={cn("size-9 rounded-[11px] sm:size-11 sm:rounded-[12px]", actions && "max-sm:hidden")}
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[0.875rem] font-bold sm:text-[0.9375rem]">{title}</p>
+        <p className="truncate text-[0.875rem] leading-snug font-bold max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:break-words sm:text-[0.9375rem]">{title}</p>
         <p className="truncate text-xs text-muted-foreground">
           {meta.join(" · ")}
           {t.status === "pending" && (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PencilIcon, PlusIcon } from "lucide-react";
+import { CreditCardIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import {
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { centsToInput } from "@/lib/money";
+import { formatDayMonth, isISODate } from "@/lib/dates";
+import { installmentLabel, invoiceDates, invoiceFor, invoiceName } from "@/lib/finance/cards";
+import { centsToInput, formatBRL, parseMoneyToCents } from "@/lib/money";
 import { useServerForm } from "@/lib/use-server-form";
 import { cn } from "@/lib/utils";
 import { saveTransactionAction } from "@/server/transactions";
@@ -27,14 +29,18 @@ import {
 
 export type AccountOption = { id: string; name: string };
 export type CategoryOption = { id: string; name: string; type: "income" | "expense" };
+export type CardOption = { id: string; name: string; closingDay: number; dueDay: number };
 
 type Props = {
   accounts: AccountOption[];
   categories: CategoryOption[];
+  cards?: CardOption[];
   today: string;
   /** Se informado, o diálogo edita esta transação. */
   transaction?: Transaction;
 };
+
+const INSTALLMENT_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18, 21, 24, 36, 48];
 
 export function TransactionDialog(props: Props) {
   const [open, setOpen] = useState(false);
@@ -62,10 +68,12 @@ export function TransactionDialog(props: Props) {
           <DialogHeader>
             <DialogTitle>{editing ? "Editar transação" : "Nova transação"}</DialogTitle>
             <DialogDescription>
-              Receita, despesa ou transferência entre suas contas.
+              {props.transaction?.installment_group_id
+                ? "Compra parcelada no cartão."
+                : "Receita, despesa (na conta ou no cartão) ou transferência."}
             </DialogDescription>
           </DialogHeader>
-          {props.accounts.length === 0 ? (
+          {props.accounts.length === 0 && (props.cards ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Antes, crie uma conta em{" "}
               <Link href="/contas" className="underline" onClick={() => setOpen(false)}>
@@ -73,6 +81,8 @@ export function TransactionDialog(props: Props) {
               </Link>
               .
             </p>
+          ) : props.transaction?.installment_group_id ? (
+            <InstallmentForm {...props} transaction={props.transaction} onDone={() => setOpen(false)} />
           ) : (
             // montado só quando aberto: cada abertura começa com o formulário limpo
             <TransactionForm {...props} onDone={() => setOpen(false)} />
@@ -83,14 +93,48 @@ export function TransactionDialog(props: Props) {
   );
 }
 
+function CategorySelect({
+  categories,
+  type,
+  defaultValue,
+  error,
+}: {
+  categories: CategoryOption[];
+  type: "income" | "expense";
+  defaultValue: string;
+  error?: string;
+}) {
+  return (
+    <Field label="Categoria" htmlFor="tx-category" error={error}>
+      <NativeSelect key={type} id="tx-category" name="category_id" defaultValue={defaultValue}>
+        <option value="">Sem categoria</option>
+        {categories
+          .filter((c) => c.type === type)
+          .map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+      </NativeSelect>
+    </Field>
+  );
+}
+
 function TransactionForm({
   accounts,
   categories,
+  cards = [],
   today,
   transaction,
   onDone,
 }: Props & { onDone: () => void }) {
   const [type, setType] = useState<TransactionType>(transaction?.type ?? "expense");
+  const [source, setSource] = useState(
+    transaction?.card_id ? `c:${transaction.card_id}` : `a:${transaction?.account_id ?? accounts[0]?.id ?? ""}`,
+  );
+  const [amountText, setAmountText] = useState(transaction ? centsToInput(transaction.amount) : "");
+  const [date, setDate] = useState(transaction?.date ?? today);
+  const [installments, setInstallments] = useState(1);
   const { pending, onSubmit, fieldError, formError } = useServerForm(
     saveTransactionAction,
     () => {
@@ -100,7 +144,17 @@ function TransactionForm({
   );
 
   const isTransfer = type === "transfer";
-  const typedCategories = categories.filter((c) => c.type === type);
+  // No cartão só entram despesas: ao trocar o tipo, volta para a primeira conta.
+  const card = type === "expense" && source.startsWith("c:") ? cards.find((c) => `c:${c.id}` === source) : undefined;
+  const effectiveSource = !card && source.startsWith("c:") ? `a:${accounts[0]?.id ?? ""}` : source;
+  const amount = parseMoneyToCents(amountText);
+
+  let invoiceHint: string | null = null;
+  if (card && isISODate(date)) {
+    const cycle = { closingDay: card.closingDay, dueDay: card.dueDay };
+    const month = invoiceFor(date, cycle);
+    invoiceHint = `Entra na ${invoiceName(month, today)} (vence ${formatDayMonth(invoiceDates(month, cycle).due)}).`;
+  }
 
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
@@ -135,37 +189,52 @@ function TransactionForm({
             placeholder="0,00"
             autoComplete="off"
             autoFocus
-            defaultValue={transaction ? centsToInput(transaction.amount) : ""}
+            value={amountText}
+            onChange={(e) => setAmountText(e.target.value)}
             aria-invalid={Boolean(fieldError("amount"))}
           />
         </Field>
         <Field label="Data" htmlFor="tx-date" error={fieldError("date")}>
-          <Input
-            id="tx-date"
-            name="date"
-            type="date"
-            
-            defaultValue={transaction?.date ?? today}
-          />
+          <Input id="tx-date" name="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
       </div>
 
-      <div className={cn("grid grid-cols-1 gap-3", isTransfer && "grid-cols-2")}>
+      <div className={cn("grid grid-cols-1 gap-3", (isTransfer || (card && !transaction)) && "grid-cols-2")}>
         <Field
-          label={isTransfer ? "Conta de origem" : "Conta"}
-          htmlFor="tx-account"
-          error={fieldError("account_id")}
+          label={isTransfer ? "Conta de origem" : type === "expense" && cards.length > 0 ? "Conta ou cartão" : "Conta"}
+          htmlFor="tx-source"
+          error={fieldError("source")}
         >
           <NativeSelect
-            id="tx-account"
-            name="account_id"
-            defaultValue={transaction?.account_id ?? accounts[0]?.id}
+            id="tx-source"
+            name="source"
+            value={effectiveSource}
+            onChange={(e) => setSource(e.target.value)}
           >
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
+            {type === "expense" && cards.length > 0 ? (
+              <>
+                <optgroup label="Contas">
+                  {accounts.map((a) => (
+                    <option key={a.id} value={`a:${a.id}`}>
+                      {a.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Cartões de crédito">
+                  {cards.map((c) => (
+                    <option key={c.id} value={`c:${c.id}`}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </>
+            ) : (
+              accounts.map((a) => (
+                <option key={a.id} value={`a:${a.id}`}>
+                  {a.name}
+                </option>
+              ))
+            )}
           </NativeSelect>
         </Field>
 
@@ -185,26 +254,45 @@ function TransactionForm({
             </NativeSelect>
           </Field>
         )}
+
+        {card && !transaction && (
+          <Field label="Parcelas" htmlFor="tx-installments" error={fieldError("installments")}>
+            <NativeSelect
+              id="tx-installments"
+              name="installments"
+              value={String(installments)}
+              onChange={(e) => setInstallments(Number(e.target.value))}
+            >
+              {INSTALLMENT_CHOICES.map((n) => (
+                <option key={n} value={n}>
+                  {n === 1 ? "À vista" : `${n}x`}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+        )}
       </div>
 
+      {card && (
+        <p className="-mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <CreditCardIcon className="mt-px size-3.5 shrink-0" aria-hidden />
+          <span>
+            {installments > 1 && amount !== null && amount >= installments && (
+              <strong className="font-semibold text-foreground">{installmentLabel(amount, installments, formatBRL)}. </strong>
+            )}
+            {invoiceHint}
+            {installments > 1 && " Cada parcela conta no mês dela."}
+          </span>
+        </p>
+      )}
+
       {!isTransfer && (
-        <Field label="Categoria" htmlFor="tx-category" error={fieldError("category_id")}>
-          <NativeSelect
-            key={type}
-            id="tx-category"
-            name="category_id"
-            defaultValue={
-              transaction?.type === type ? (transaction.category_id ?? "") : ""
-            }
-          >
-            <option value="">Sem categoria</option>
-            {typedCategories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </Field>
+        <CategorySelect
+          categories={categories}
+          type={type === "income" ? "income" : "expense"}
+          defaultValue={transaction?.type === type ? (transaction.category_id ?? "") : ""}
+          error={fieldError("category_id")}
+        />
       )}
 
       <Field label="Descrição" htmlFor="tx-description" error={fieldError("description")}>
@@ -217,15 +305,18 @@ function TransactionForm({
         />
       </Field>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          name="settled"
-          defaultChecked={transaction ? transaction.status === "settled" : true}
-          className="size-4 accent-[var(--primary)]"
-        />
-        Já aconteceu (conta no saldo agora)
-      </label>
+      {/* Compra no cartão já aconteceu; ela sai da conta quando a fatura for paga. */}
+      {!card && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="settled"
+            defaultChecked={transaction ? transaction.status === "settled" : true}
+            className="size-4 accent-[var(--primary)]"
+          />
+          Já aconteceu (conta no saldo agora)
+        </label>
+      )}
 
       {formError && (
         <p role="alert" className="text-sm text-destructive">
@@ -233,6 +324,44 @@ function TransactionForm({
         </p>
       )}
 
+      <Button type="submit" disabled={pending}>
+        {pending ? "Salvando…" : "Salvar"}
+      </Button>
+    </form>
+  );
+}
+
+/** Parcela: muda descrição e categoria da compra toda (RN-09). */
+function InstallmentForm({
+  categories,
+  transaction,
+  onDone,
+}: Props & { transaction: Transaction; onDone: () => void }) {
+  const { pending, onSubmit, fieldError, formError } = useServerForm(saveTransactionAction, () => {
+    toast.success("Parcelas atualizadas");
+    onDone();
+  });
+  return (
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
+      <input type="hidden" name="id" value={transaction.id} />
+      <p className="glass-inner rounded-[12px] p-3 text-[0.8125rem] text-muted-foreground">
+        Parcela {transaction.installment_number} de {transaction.installment_total}. O que mudar aqui vale para todas as
+        parcelas. Para mudar o valor ou o número de parcelas, exclua a compra e lance de novo.
+      </p>
+      <CategorySelect
+        categories={categories}
+        type="expense"
+        defaultValue={transaction.category_id ?? ""}
+        error={fieldError("category_id")}
+      />
+      <Field label="Descrição" htmlFor="tx-description" error={fieldError("description")}>
+        <Input id="tx-description" name="description" autoComplete="off" defaultValue={transaction.description ?? ""} />
+      </Field>
+      {formError && (
+        <p role="alert" className="text-sm text-destructive">
+          {formError}
+        </p>
+      )}
       <Button type="submit" disabled={pending}>
         {pending ? "Salvando…" : "Salvar"}
       </Button>

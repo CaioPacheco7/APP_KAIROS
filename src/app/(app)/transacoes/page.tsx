@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
+import { cardOptions } from "@/components/transactions/options";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
@@ -21,7 +22,9 @@ import {
   getCategoryNames,
   getFormOptions,
 } from "@/server/queries";
+import { getCardNames } from "@/server/card-data";
 import {
+  TRANSACTION_COLUMNS,
   TRANSACTION_TYPE_LABEL,
   type Transaction,
   type TransactionType,
@@ -42,9 +45,10 @@ export default async function TransacoesPage({
   // A hora atual só pode ser lida em tempo de requisição (não na pré-renderização).
   await connection();
   const sp = await searchParams;
-  const { accounts, categories, today } = await getFormOptions();
+  const { accounts, categories, cards, today } = await getFormOptions();
   const accountNames = await getAccountNames();
   const categoryNames = await getCategoryNames();
+  const cardNames = await getCardNames();
 
   const month = parseMonth(sp.mes, today.slice(0, 7));
   const accountFilter = UUID_RE.test(single(sp.conta) ?? "") ? single(sp.conta)! : undefined;
@@ -57,7 +61,7 @@ export default async function TransacoesPage({
   let query = db
     .from("transactions")
     .select(
-      "id, type, amount, date, status, description, notes, account_id, category_id, transfer_account_id",
+      TRANSACTION_COLUMNS,
     )
     .is("deleted_at", null)
     .gte("date", start)
@@ -67,14 +71,15 @@ export default async function TransacoesPage({
     .limit(500);
   if (accountFilter) {
     query = query.or(
-      `account_id.eq.${accountFilter},transfer_account_id.eq.${accountFilter}`,
+      // o mesmo filtro serve para conta e cartão (ids nunca se repetem)
+      `account_id.eq.${accountFilter},transfer_account_id.eq.${accountFilter},card_id.eq.${accountFilter}`,
     );
   }
   if (categoryFilter) query = query.eq("category_id", categoryFilter);
   if (typeFilter) query = query.eq("type", typeFilter);
 
   const { data } = await query;
-  const transactions = (data ?? []) as Transaction[];
+  const transactions = ((data ?? []) as Transaction[]).map((t) => ({ ...t, amount: Number(t.amount) }));
 
   const income = transactions
     .filter((t) => t.type === "income")
@@ -93,6 +98,7 @@ export default async function TransacoesPage({
 
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name }));
   const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name, type: c.type }));
+  const cardChoices = cardOptions(cards);
   const hasFilters = Boolean(accountFilter || categoryFilter || typeFilter);
 
   return (
@@ -137,14 +143,33 @@ export default async function TransacoesPage({
             ))}
           </NativeSelect>
         </Field>
-        <Field label="Conta" htmlFor="f-conta" className="w-48">
+        <Field label={cards.length > 0 ? "Conta ou cartão" : "Conta"} htmlFor="f-conta" className="w-48">
           <NativeSelect id="f-conta" name="conta" defaultValue={accountFilter ?? ""}>
-            <option value="">Todas</option>
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
+            <option value="">Todos</option>
+            {cards.length > 0 ? (
+              <>
+                <optgroup label="Contas">
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Cartões de crédito">
+                  {cards.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </>
+            ) : (
+              accounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))
+            )}
           </NativeSelect>
         </Field>
         <Field label="Categoria" htmlFor="f-categoria" className="w-52">
@@ -202,14 +227,16 @@ export default async function TransacoesPage({
                           key={t.id}
                           transaction={t}
                           showDate={false}
-                          accountName={accountNames.get(t.account_id)}
+                          accountName={t.account_id ? accountNames.get(t.account_id) : undefined}
                           toAccountName={t.transfer_account_id ? accountNames.get(t.transfer_account_id) : undefined}
+                          cardName={t.card_id ? cardNames.get(t.card_id) : undefined}
                           categoryName={t.category_id ? categoryNames.get(t.category_id) : null}
                           actions={
                             <TransactionRowActions
                               transaction={t}
                               accounts={accountOptions}
                               categories={categoryOptions}
+                              cards={cardChoices}
                               today={today}
                             />
                           }

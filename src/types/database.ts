@@ -33,9 +33,45 @@ export type Transaction = {
   status: TransactionStatus;
   description: string | null;
   notes: string | null;
-  account_id: string;
+  /** null em compra no cartão (o dinheiro sai da conta só ao pagar a fatura) */
+  account_id: string | null;
   category_id: string | null;
   transfer_account_id: string | null;
+  /** compra no cartão ou pagamento de fatura */
+  card_id?: string | null;
+  /** mês da fatura (do vencimento): "YYYY-MM-01" */
+  invoice_month?: string | null;
+  installment_group_id?: string | null;
+  installment_number?: number | null;
+  installment_total?: number | null;
+};
+
+/** Colunas de transação que as listas buscam. */
+export const TRANSACTION_COLUMNS =
+  "id, type, amount, date, status, description, notes, account_id, category_id, transfer_account_id, card_id, invoice_month, installment_group_id, installment_number, installment_total";
+
+export type CreditCard = {
+  id: string;
+  name: string;
+  credit_limit: number;
+  closing_day: number;
+  due_day: number;
+  default_account_id: string | null;
+  archived_at: string | null;
+};
+
+export type CardInvoiceRow = {
+  card_id: string;
+  invoice_month: string; // "YYYY-MM-01"
+  charges: number;
+  paid: number;
+  items: number;
+};
+
+export type Budget = {
+  category_id: string;
+  month: string; // "YYYY-MM-01"
+  amount: number;
 };
 
 export type AccountBalance = { account_id: string; balance: number };

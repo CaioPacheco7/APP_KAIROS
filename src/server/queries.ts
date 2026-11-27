@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { todayISO } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
+import { getCards } from "./card-data";
 import type {
   Account,
   AccountBalance,
@@ -43,11 +44,12 @@ export const getBalances = cache(async (): Promise<Map<string, number>> => {
 
 /** Tudo que os formulários de transação precisam. */
 export const getFormOptions = cache(async () => {
-  const [accounts, categories] = await Promise.all([
+  const [accounts, categories, cards] = await Promise.all([
     getAccounts(),
     getCategories(),
+    getCards(),
   ]);
-  return { accounts, categories, today: todayISO() };
+  return { accounts, categories, cards, today: todayISO() };
 });
 
 /** id -> nome de TODAS as contas (inclusive arquivadas), para exibir o histórico. */

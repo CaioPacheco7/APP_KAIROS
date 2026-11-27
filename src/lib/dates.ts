@@ -112,6 +112,16 @@ export function daysInMonth(month: string): number {
   return new Date(Date.UTC(y, m, 0)).getUTCDate();
 }
 
+/**
+ * Mesmo dia `k` meses depois; se o mês for mais curto, vira o último dia
+ * ("2026-01-31" + 1 -> "2026-02-28"). Sempre conta a partir do dia original.
+ */
+export function addMonthsClamped(iso: string, k: number): string {
+  const month = shiftMonth(iso.slice(0, 7), k);
+  const day = Math.min(Number(iso.slice(8, 10)), daysInMonth(month));
+  return `${month}-${String(day).padStart(2, "0")}`;
+}
+
 /** "2026-11-14T12:00:00Z" -> "09:00" (hora no fuso de São Paulo) */
 export function formatTimeBR(isoTimestamp: string): string {
   return new Intl.DateTimeFormat("pt-BR", {

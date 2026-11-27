@@ -9,6 +9,7 @@ describe("isFinancePath: só Finanças exige a entrevista", () => {
     "/transacoes",
     "/transacoes/qualquer-coisa",
     "/contas",
+    "/cartoes",
     "/planejar",
     "/planejar/conquista",
     "/planejar/divida",

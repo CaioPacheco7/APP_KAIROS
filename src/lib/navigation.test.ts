@@ -51,9 +51,12 @@ describe("cenas de fundo", () => {
 });
 
 describe("abas dos módulos (docas)", () => {
-  it("Finanças lista as cinco telas, todas dentro de Finanças", () => {
+  it("Finanças lista as seis telas, todas dentro de Finanças", () => {
     const items = subnavFor("financas");
-    expect(items.map((i) => i.href)).toEqual(["/dashboard", "/mes", "/transacoes", "/contas", "/planejar"]);
+    expect(items.map((i) => i.href)).toEqual(["/dashboard", "/mes", "/transacoes", "/contas", "/cartoes", "/planejar"]);
+    expect(activeSubId("financas", "/cartoes", null)).toBe("cartoes");
+    expect(searchDestinations("fatura").map((d) => d.href)).toContain("/cartoes");
+    expect(searchDestinations("orcamento").map((d) => d.href)).toEqual(["/mes#orcamento"]);
     for (const i of items) expect(isFinancePath(i.href)).toBe(true);
   });
 

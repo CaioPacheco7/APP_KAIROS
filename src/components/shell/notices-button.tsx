@@ -6,6 +6,8 @@ import {
   BellRingIcon,
   CircleAlertIcon,
   ClockIcon,
+  CreditCardIcon,
+  GaugeIcon,
   ReceiptTextIcon,
   ListTodoIcon,
 } from "lucide-react";
@@ -17,7 +19,13 @@ import type { Notice } from "@/lib/notices";
 import { cn } from "@/lib/utils";
 import { iconButtonClass } from "./styles";
 
-const KIND_ICON = { task: ListTodoIcon, reminder: BellRingIcon, bill: ReceiptTextIcon } as const;
+const KIND_ICON = {
+  task: ListTodoIcon,
+  reminder: BellRingIcon,
+  bill: ReceiptTextIcon,
+  invoice: CreditCardIcon,
+  budget: GaugeIcon,
+} as const;
 
 /** Sino do topo: um ponto coral quando há algo atrasado ou para hoje. */
 export function NoticesButton({ items }: { items: Notice[] }) {
@@ -56,8 +64,8 @@ export function NoticesButton({ items }: { items: Notice[] }) {
               {items.length === 0
                 ? "Nada atrasado, nada vencendo. Tudo em ordem."
                 : urgent > 0
-                  ? `${urgent} ${urgent === 1 ? "item atrasado ou para hoje" : "itens atrasados ou para hoje"}.`
-                  : "Nada atrasado. Só o que vence nos próximos dias."}
+                  ? `${urgent} ${urgent === 1 ? "item pede atenção agora" : "itens pedem atenção agora"}.`
+                  : "Nada atrasado. Só avisos para os próximos dias."}
             </DialogDescription>
           </div>
           {items.length > 0 && (

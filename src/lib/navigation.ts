@@ -86,6 +86,7 @@ const FINANCE_SHORT: Record<string, string> = {
   "/mes": "Mês",
   "/transacoes": "Transações",
   "/contas": "Contas",
+  "/cartoes": "Cartões",
   "/planejar": "Planejar",
 };
 
@@ -143,6 +144,8 @@ export const DESTINATIONS: readonly Destination[] = [
   { href: "/mes", label: "Meu mês", group: "Telas", description: "Renda, contas fixas e o semáforo do mês", keywords: "contas fixas vencimentos semaforo" },
   { href: "/transacoes", label: "Transações", group: "Telas", description: "Tudo que entrou e saiu, dia a dia", keywords: "gastos extrato movimentacoes" },
   { href: "/contas", label: "Contas", group: "Telas", description: "Bancos, carteira e reserva", keywords: "banco carteira saldo nubank" },
+  { href: "/cartoes", label: "Cartões", group: "Telas", description: "Faturas, parcelas e limite dos cartões de crédito", keywords: "cartao credito fatura parcela limite pagar" },
+  { href: "/mes#orcamento", label: "Orçamento", group: "Atalhos", description: "Limite de gasto por categoria no mês", keywords: "orcamento limite categoria teto gastos" },
   { href: "/planejar", label: "Planejar", group: "Telas", description: "Planos para conquistar algo ou sair de uma dívida", keywords: "metas objetivos planos" },
   { href: "/rotina", label: "Rotina · Hoje", group: "Telas", description: "Hábitos do dia, tarefas e lembretes", keywords: "habitos dia checklist" },
   { href: "/rotina?aba=tarefas", label: "Tarefas", group: "Telas", description: "Quadro de tarefas por prazo", keywords: "afazeres todo pendencias" },

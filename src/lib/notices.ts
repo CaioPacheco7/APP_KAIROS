@@ -1,6 +1,7 @@
 /**
  * Avisos do sino ("o que precisa de você"): tarefas e lembretes que venceram
- * ou vencem hoje, e contas a pagar atrasadas ou que vencem em poucos dias.
+ * ou vencem hoje, contas e faturas atrasadas ou que vencem em poucos dias, e
+ * categorias perto do limite do orçamento.
  * Pura e testável: quem busca os dados é `server/notices.ts`.
  */
 import { addDays, formatDayMonth, formatTimeBR } from "@/lib/dates";
@@ -18,7 +19,7 @@ export function dueState(date: string, today: string, soonDays = 3): DueState {
 
 export type Notice = {
   id: string;
-  kind: "task" | "reminder" | "bill";
+  kind: "task" | "reminder" | "bill" | "invoice" | "budget";
   title: string;
   detail: string;
   href: string;
@@ -80,6 +81,66 @@ export function billNotice(bill: BillInput, today: string): Notice {
     href: "/mes",
     state,
     date: bill.date,
+  };
+}
+
+export type InvoiceNoticeInput = {
+  cardId: string;
+  cardName: string;
+  /** mês da fatura ("2026-12") */
+  month: string;
+  due: string;
+  remaining: number;
+};
+
+/** Fatura com saldo a pagar: vencida ou vencendo em até 3 dias. */
+export function invoiceNotice(invoice: InvoiceNoticeInput, today: string): Notice {
+  const state = dueState(invoice.due, today);
+  const when =
+    state === "overdue"
+      ? `venceu ${formatDayMonth(invoice.due)}`
+      : state === "today"
+        ? "vence hoje"
+        : `vence ${formatDayMonth(invoice.due)}`;
+  return {
+    id: `invoice-${invoice.cardId}-${invoice.month}`,
+    kind: "invoice",
+    title: `Fatura ${invoice.cardName}`,
+    detail: `${formatBRL(invoice.remaining)} · ${when}`,
+    href: `/cartoes?cartao=${invoice.cardId}&fatura=${invoice.month}`,
+    state,
+    date: invoice.due,
+  };
+}
+
+export type BudgetNoticeInput = {
+  categoryId: string;
+  name: string;
+  spent: number;
+  limit: number;
+  level: "ok" | "near" | "over";
+};
+
+/**
+ * Orçamento (RN-12): a partir de 80% do limite vira aviso; em 100% ou mais,
+ * aviso de risco (mesmo destaque de um atraso).
+ */
+export function budgetNotice(line: BudgetNoticeInput, today: string): Notice {
+  const pct = Math.round((line.spent / line.limit) * 100);
+  const detail =
+    line.spent > line.limit
+      ? `passou ${formatBRL(line.spent - line.limit)} do limite de ${formatBRL(line.limit)}`
+      : line.spent === line.limit
+        ? `chegou ao limite de ${formatBRL(line.limit)}`
+        : `${formatBRL(line.spent)} de ${formatBRL(line.limit)} · ${pct}% do limite`;
+  return {
+    id: `budget-${line.categoryId}`,
+    kind: "budget",
+    title: `Orçamento · ${line.name}`,
+    detail,
+    href: "/mes#orcamento",
+    state: line.level === "over" ? "overdue" : "soon",
+    date: today,
   };
 }
 

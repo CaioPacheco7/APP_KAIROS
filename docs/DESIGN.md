@@ -25,7 +25,7 @@ as peças reutilizáveis, em `src/components/`. O estilo nasceu de um painel de 
 | Barra do topo | `components/shell/top-bar.tsx` | marca + data (abaixo de 400 px, só o logo), busca/registro, "+ Novo" (Finanças), ocultar valores, tema, avisos, sair |
 | Ocultar valores | `components/shell/privacy-toggle.tsx` + `lib/privacy.ts` | o olho embaça todo valor em reais (ver abaixo) |
 | Busca/registro | `components/shell/ask-bar.tsx` | abre com clique, **Ctrl+K** ou **/**; busca telas e registra gastos, tarefas, lembretes e notas (mesmo interpretador do Registrar, sem IA) |
-| Avisos | `components/shell/notices-button.tsx` + `server/notices.ts` | sino com ponto coral: tarefas atrasadas/de hoje e contas vencidas ou que vencem em até 3 dias |
+| Avisos | `components/shell/notices-button.tsx` + `server/notices.ts` | sino com ponto coral: tarefas atrasadas/de hoje, contas e faturas vencidas ou que vencem em até 3 dias, e categorias a partir de 80% do orçamento |
 | Palco | `app/(app)/layout.tsx` | o painel de vidro grande onde a tela acontece |
 | Doca lateral | `components/shell/docks.tsx` | os 4 módulos (computador), só ícones com dica |
 | Doca de baixo | idem | abas do módulo atual (Finanças, Rotina); no Início e no Registrar, os módulos |
@@ -124,6 +124,8 @@ Feitos à mão em SVG/HTML (`components/viz/`), seguindo o guia de visualizaçã
 | `SubscriptionsCard` | `components/recurrences/subscriptions-card.tsx` | assinaturas: total por mês e por ano, próxima renovação |
 | `HabitYearMap` | `components/routine/habit-year.tsx` | mapa do ano dos hábitos (setas do teclado + tabela) |
 | `Money` / `MoneyText` | `components/app/money.tsx` | marcam valores em reais para o "ocultar valores" |
+| `CardDialog` / `PayInvoiceDialog` | `components/cards/` | novo/editar cartão; pagar fatura (toda, parte ou adiantada) |
+| `BudgetCard` / `BudgetDialog` | `components/budget/` | orçamento do mês por categoria; definir, trocar ou tirar um limite |
 | `Card`, `Button`, `Input`, `Dialog`, `Badge` | `components/ui/` | base shadcn (Base UI) já no estilo vidro |
 
 ## Ocultar valores
@@ -148,6 +150,18 @@ até 1/3, até 2/3, quase tudo e tudo. Dia sem hábito previsto = só o contorno
 quadradinho acompanha a largura do painel (11 a 18 px); no celular o mapa rola por dentro e abre
 nas semanas mais recentes. Legenda "Menos → Mais", leitura do dia ao passar o mouse ou pelas setas
 (aviso para leitores de tela) e "Ver como tabela" por mês.
+
+## Cartões e orçamento
+
+- **Fatura**: o número em destaque é o que falta pagar (ou o total, se ainda aberta). A situação vem sempre com
+  ícone + texto: aberta (relógio), fechada (cadeado, tom de atenção), vencida (alerta, tom de risco), paga (check, tom bom).
+- **Limite do cartão**: medidor dourado (o mesmo de "progresso"), com usado, livre e "contando as parcelas futuras".
+- **Faturas mês a mês**: faixa de botões que rola por dentro no celular; a selecionada usa a pílula marfim (`bg-pick`).
+- **Orçamento**: a barra é o gasto (na cor das Saídas, até o limite); o **traço fino** em cada linha é o ritmo de
+  hoje (fração do mês que já passou). Em "Para onde foi o dinheiro", o traço é o **limite** da categoria e a escala
+  vai até o maior entre gasto e limite.
+- A barra **nunca muda de cor** por estar acima do limite: o vermelho de risco e a cor das Saídas são quase o mesmo
+  tom no tema claro. Quem diz "passou" é o texto com ícone logo abaixo.
 
 ## Padrões de página
 

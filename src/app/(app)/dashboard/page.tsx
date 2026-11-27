@@ -6,6 +6,7 @@ import {
   CircleAlertIcon,
   ClockIcon,
   CoinsIcon,
+  CreditCardIcon,
   FlagIcon,
   ScaleIcon,
   WalletIcon,
@@ -15,7 +16,7 @@ import { connection } from "next/server";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
 import { Panel } from "@/components/app/panel";
-import { CategoryBars } from "@/components/charts/category-bars";
+import { CategoryBars, type CategoryItem } from "@/components/charts/category-bars";
 import { HealthSummary } from "@/components/health/health-card";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { ActivityTable, type ActivityRow } from "@/components/transactions/activity-table";
@@ -39,6 +40,8 @@ import { dueState } from "@/lib/notices";
 import { createClient } from "@/lib/supabase/server";
 import { capitalize, cn } from "@/lib/utils";
 import { pctChange } from "@/lib/viz";
+import { getBudgetOverview } from "@/server/budget-data";
+import { getCardNames, getCardSummaries } from "@/server/card-data";
 import { getMonthSnapshot } from "@/server/health";
 import {
   getAccounts,
@@ -46,16 +49,17 @@ import {
   getCategoryNames,
   getFormOptions,
 } from "@/server/queries";
-import type {
-  MonthlySummary,
-  SpendingByCategory,
-  Transaction,
+import {
+  type MonthlySummary,
+  type SpendingByCategory,
+  TRANSACTION_COLUMNS,
+  type Transaction,
 } from "@/types/database";
 
 export const metadata = { title: "Visão geral · KAIROS" };
 
 type ExpenseRow = { amount: number; date: string; recurrence_id: string | null };
-type BillRow = { id: string; amount: number; date: string; description: string | null };
+type BillRow = { id: string; amount: number; date: string; description: string | null; href?: string };
 type GoalRow = { id: string; kind: "purchase" | "debt"; title: string; target_amount: number };
 
 const monthName = (m: string) => monthLabel(m).split(" ")[0];
@@ -78,11 +82,14 @@ export default async function DashboardPage({
   const snapshot = await getMonthSnapshot(month, today);
 
   const db = await createClient();
-  const [accounts, balances, categoryNames, summaryRes, spendingRes, recentRes, expensesRes, billsRes, goalsRes, progressRes] =
+  const [accounts, balances, categoryNames, cardSummaries, cardNames, budget, summaryRes, spendingRes, recentRes, expensesRes, billsRes, goalsRes, progressRes] =
     await Promise.all([
       getAccounts(),
       getBalances(),
       getCategoryNames(),
+      getCardSummaries(today),
+      getCardNames(),
+      getBudgetOverview(month, today),
       db
         .from("v_monthly_summary")
         .select("month, income_settled, expense_settled, income_pending, expense_pending")
@@ -93,8 +100,10 @@ export default async function DashboardPage({
         .eq("month", start),
       db
         .from("transactions")
-        .select("id, type, amount, date, status, description, account_id, category_id, transfer_account_id, notes")
+        .select(TRANSACTION_COLUMNS)
         .is("deleted_at", null)
+        // só o que já aconteceu: parcelas futuras do cartão não são "últimas"
+        .lte("date", today)
         .order("date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(12),
@@ -166,29 +175,56 @@ export default async function DashboardPage({
     ...split.get(m)!,
   }));
 
-  const categoryItems = ((spendingRes.data ?? []) as SpendingByCategory[]).map((r) => ({
-    label: r.category_id ? (categoryNames.get(r.category_id) ?? "Categoria") : "Sem categoria",
-    total: Number(r.total),
-  }));
+  // Gasto por categoria, com o limite do orçamento quando houver (RN-12)
+  const budgetByCategory = new Map(budget.lines.map((l) => [l.categoryId, l]));
+  const categoryItems: CategoryItem[] = ((spendingRes.data ?? []) as SpendingByCategory[]).map((r) => {
+    const line = r.category_id ? budgetByCategory.get(r.category_id) : undefined;
+    return {
+      label: r.category_id ? (categoryNames.get(r.category_id) ?? "Categoria") : "Sem categoria",
+      total: Number(r.total),
+      limit: line?.limit,
+      level: line?.level,
+    };
+  });
 
   const accountNames = new Map(accounts.map((a) => [a.id, a.name]));
+  const cardLabel = (id: string) => `cartão ${cardNames.get(id) ?? ""}`.trim();
   const activity: ActivityRow[] = ((recentRes.data ?? []) as Transaction[]).map((t) => ({
     id: t.id,
     title: t.description ?? (t.type === "income" ? "Receita" : t.type === "expense" ? "Despesa" : "Transferência"),
     category:
       t.type === "transfer"
-        ? `→ ${t.transfer_account_id ? (accountNames.get(t.transfer_account_id) ?? "Conta") : "Conta"}`
+        ? `→ ${t.card_id ? cardLabel(t.card_id) : t.transfer_account_id ? (accountNames.get(t.transfer_account_id) ?? "Conta") : "Conta"}`
         : t.category_id
           ? (categoryNames.get(t.category_id) ?? "Categoria")
           : "Sem categoria",
-    account: accountNames.get(t.account_id) ?? "Conta",
+    account:
+      t.type !== "transfer" && t.card_id
+        ? cardLabel(t.card_id) + (t.installment_number ? ` · ${t.installment_number}/${t.installment_total}` : "")
+        : t.account_id
+          ? (accountNames.get(t.account_id) ?? "Conta")
+          : "Conta",
     date: formatDayMonth(t.date),
     amount: Number(t.amount),
     type: t.type,
     pending: t.status === "pending",
   }));
 
-  const bills = (billsRes.data ?? []) as BillRow[];
+  // Contas a pagar do mês: contas pendentes + faturas que vencem no mês com saldo
+  const invoiceBills: BillRow[] = cardSummaries.flatMap(({ card, invoices }) =>
+    invoices
+      .filter((i) => i.month === month && i.remaining > 0)
+      .map((i) => ({
+        id: `fatura-${card.id}-${i.month}`,
+        amount: i.remaining,
+        date: i.due,
+        description: `Fatura ${card.name}`,
+        href: `/cartoes?cartao=${card.id}&fatura=${i.month}`,
+      })),
+  );
+  const bills = [...((billsRes.data ?? []) as BillRow[]), ...invoiceBills]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 5);
   const contributed = new Map(
     ((progressRes.data ?? []) as { goal_id: string; contributed: number }[]).map((p) => [p.goal_id, Number(p.contributed)]),
   );
@@ -334,7 +370,7 @@ export default async function DashboardPage({
           </Panel>
           <Panel
             title="Contas a pagar"
-            subtitle={bills.length > 0 ? "Pendentes neste mês" : "Tudo pago neste mês"}
+            subtitle={bills.length > 0 ? "Contas e faturas pendentes neste mês" : "Tudo pago neste mês"}
             action={
               <Link href="/mes" aria-label="Abrir Meu mês" className="glass-inner grid size-9 place-items-center rounded-full transition-colors hover:bg-raised">
                 <ArrowUpRightIcon className="size-4" aria-hidden />
@@ -359,10 +395,24 @@ export default async function DashboardPage({
                             : "glass-inner text-muted-foreground",
                         )}
                       >
-                        {state === "overdue" ? <CircleAlertIcon className="size-4" aria-hidden /> : <ClockIcon className="size-4" aria-hidden />}
+                        {state === "overdue" ? (
+                          <CircleAlertIcon className="size-4" aria-hidden />
+                        ) : b.href ? (
+                          <CreditCardIcon className="size-4" aria-hidden />
+                        ) : (
+                          <ClockIcon className="size-4" aria-hidden />
+                        )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <strong className="block truncate text-[0.75rem] font-bold">{b.description ?? "Conta"}</strong>
+                        <strong className="block truncate text-[0.75rem] font-bold">
+                          {b.href ? (
+                            <Link href={b.href} className="underline-offset-2 hover:underline">
+                              {b.description}
+                            </Link>
+                          ) : (
+                            (b.description ?? "Conta")
+                          )}
+                        </strong>
                         <small className={cn("block text-[0.625rem] font-semibold", state === "overdue" ? "text-risk" : "text-muted-foreground")}>
                           {state === "overdue"
                             ? `Atrasada · venceu ${formatDayMonth(b.date)}`
@@ -452,7 +502,22 @@ export default async function DashboardPage({
         <Panel title="Entradas e saídas" subtitle="Os últimos seis meses, em reais (o que já foi pago ou recebido)">
           <FlowChart points={flow} />
         </Panel>
-        <Panel title="Para onde foi o dinheiro" subtitle={capitalize(monthLabel(month))}>
+        <Panel
+          title="Para onde foi o dinheiro"
+          subtitle={
+            budget.lines.length > 0
+              ? `${capitalize(monthLabel(month))} · o traço é o limite do orçamento`
+              : capitalize(monthLabel(month))
+          }
+          action={
+            <Link
+              href="/mes#orcamento"
+              className="text-[0.6875rem] font-bold whitespace-nowrap text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {budget.lines.length > 0 ? "Orçamento" : "Definir limites"}
+            </Link>
+          }
+        >
           <CategoryBars items={categoryItems} />
         </Panel>
       </div>
