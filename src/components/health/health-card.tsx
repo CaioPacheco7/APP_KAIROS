@@ -4,6 +4,7 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import { MoneyText } from "@/components/app/money";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Health, HealthLevel } from "@/lib/finance/health";
 import { cn } from "@/lib/utils";
@@ -92,7 +93,7 @@ export function HealthSummary({
         </div>
       )}
 
-      {!compact && <p className="text-[0.8125rem] leading-relaxed">{health.message}</p>}
+      {!compact && <p className="text-[0.8125rem] leading-relaxed"><MoneyText>{health.message}</MoneyText></p>}
     </div>
   );
 }

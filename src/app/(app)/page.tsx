@@ -2,7 +2,6 @@ import {
   ArrowRightIcon,
   CheckCheckIcon,
   CheckIcon,
-  CoinsIcon,
   ListChecksIcon,
   NotebookPenIcon,
   SquarePenIcon,
@@ -11,9 +10,11 @@ import {
 import Link from "next/link";
 import { connection } from "next/server";
 import { IconChip, type Tone } from "@/components/app/icon-chip";
+import { Money } from "@/components/app/money";
 import { ProgressRing } from "@/components/app/progress-ring";
 import { SectorCard } from "@/components/app/sector-card";
 import { HealthSummary } from "@/components/health/health-card";
+import { TodayAllowance } from "@/components/health/today-allowance";
 import { HabitRow } from "@/components/routine/habit-row";
 import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
@@ -24,7 +25,7 @@ import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { capitalize } from "@/lib/utils";
 import { getHabitBoard, summarizeToday } from "@/server/habits-board";
-import { getMonthSnapshot } from "@/server/health";
+import { getMonthSnapshot, type MonthSnapshot } from "@/server/health";
 import { getAccounts, getBalances, getFormOptions, getProfile } from "@/server/queries";
 
 export const metadata = { title: "Início · KAIROS" };
@@ -75,7 +76,7 @@ export default async function InicioPage() {
   const pendingTasks = tasksDue.count ?? 0;
 
   // Resumo das finanças só existe para quem já configurou o módulo.
-  let finance: { health: Awaited<ReturnType<typeof getMonthSnapshot>>["health"]; balance: number } | null = null;
+  let finance: (Pick<MonthSnapshot, "health" | "allowance"> & { balance: number }) | null = null;
   if (financeReady) {
     const [snapshot, accounts, balances] = await Promise.all([
       getMonthSnapshot(today.slice(0, 7), today),
@@ -84,6 +85,7 @@ export default async function InicioPage() {
     ]);
     finance = {
       health: snapshot.health,
+      allowance: snapshot.allowance,
       balance: accounts.reduce((sum, a) => sum + (balances.get(a.id) ?? 0), 0),
     };
   }
@@ -138,24 +140,32 @@ export default async function InicioPage() {
         >
           {finance ? (
             <>
-              <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-                <div>
+              <div
+                className={
+                  finance.allowance
+                    ? "grid grid-cols-1 items-stretch gap-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]"
+                    : "grid grid-cols-1"
+                }
+              >
+                {/* o número que responde "posso gastar agora?" vem primeiro */}
+                {finance.allowance && <TodayAllowance allowance={finance.allowance} />}
+                <div className="flex min-w-0 flex-col justify-end gap-1 sm:px-1">
                   <p className="text-[0.6875rem] font-semibold text-muted-foreground">Saldo total</p>
-                  <p className="text-[clamp(2.2rem,4vw,3.2rem)] leading-[1.02] font-extrabold tracking-[-0.07em]">
+                  <p
+                    className={
+                      finance.allowance
+                        ? "text-[clamp(1.75rem,3vw,2.35rem)] leading-[1.02] font-extrabold tracking-[-0.065em]"
+                        : "text-[clamp(2.2rem,4vw,3.2rem)] leading-[1.02] font-extrabold tracking-[-0.07em]"
+                    }
+                  >
                     <Count value={finance.balance} />
                   </p>
+                  {!finance.allowance && finance.health.perDay !== null && (
+                    <p className="text-[0.6875rem] text-muted-foreground">
+                      Até o fim do mês, cerca de <Money>{formatBRL(Math.max(finance.health.perDay, 0))}</Money> por dia
+                    </p>
+                  )}
                 </div>
-                {finance.health.perDay !== null && (
-                  <p className="flex items-center gap-2 rounded-[12px] border border-[#f6e3b4] bg-[linear-gradient(145deg,#e9cd8f,#c39a50)] px-3 py-2 text-[#22180a]">
-                    <CoinsIcon className="size-4 shrink-0" aria-hidden />
-                    <span>
-                      <span className="block text-[0.625rem] font-bold">Pode gastar por dia</span>
-                      <strong className="block text-base leading-tight font-extrabold tracking-[-0.03em]">
-                        {formatBRL(Math.max(finance.health.perDay, 0))}
-                      </strong>
-                    </span>
-                  </p>
-                )}
               </div>
               <div className="glass-inner rounded-[14px] p-3.5">
                 <HealthSummary health={finance.health} compact />

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/app/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { privacyBootScript } from "@/lib/privacy";
 import "./globals.css";
 
 /** Manrope (variável): toda a interface, títulos e números. */
@@ -27,6 +28,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" suppressHydrationWarning className={`${sans.variable} h-full antialiased`}>
+      <head>
+        {/* "ocultar valores" salvo neste aparelho, aplicado antes da primeira pintura */}
+        <script dangerouslySetInnerHTML={{ __html: privacyBootScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
           {children}

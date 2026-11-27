@@ -86,7 +86,7 @@ export function FlowChart({ points }: { points: FlowPoint[] }) {
         {/* eixo Y: marcas redondas, por extenso abaixo de 10 mil */}
         <div className="relative h-[200px] text-[0.625rem] text-muted-foreground tabular-nums" aria-hidden>
           {scale.ticks.map((t) => (
-            <span key={t} className="absolute right-2 -translate-y-1/2" style={{ top: top(t) }}>
+            <span key={t} className="money absolute right-2 -translate-y-1/2" style={{ top: top(t) }}>
               {tickLabel(t, scale.max)}
             </span>
           ))}
@@ -197,7 +197,7 @@ function TipRow({ color, value, label }: { color: string; value: string; label: 
   return (
     <span className="flex items-center gap-2">
       <span aria-hidden className="h-[2px] w-2.5 rounded-full" style={{ background: color }} />
-      <b className="font-extrabold tabular-nums">{value}</b>
+      <b className="money font-extrabold tabular-nums">{value}</b>
       <span className="text-muted-foreground">{label}</span>
     </span>
   );

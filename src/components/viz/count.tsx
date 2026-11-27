@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useRef } from "react";
 import { formatBRL } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
 gsap.registerPlugin(useGSAP);
 
@@ -97,7 +98,7 @@ export function Count({
   );
 
   return (
-    <span className={className}>
+    <span className={cn(format.startsWith("brl") && "money", className)}>
       <span ref={ref} aria-hidden>
         {finalText}
       </span>

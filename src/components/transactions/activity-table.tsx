@@ -2,6 +2,7 @@
 
 import { FilterIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
+import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { normalizeSearch } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -113,7 +114,7 @@ export function ActivityTable({ rows }: { rows: ActivityRow[] }) {
                   )}
                 >
                   {r.type === "income" ? "+ " : r.type === "expense" ? "− " : "⇄ "}
-                  {formatBRL(r.amount)}
+                  <Money>{formatBRL(r.amount)}</Money>
                 </td>
               </tr>
             ))}

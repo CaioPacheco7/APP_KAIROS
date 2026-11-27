@@ -38,6 +38,14 @@ describe("textos dos avisos", () => {
     expect(billNotice({ id: "b", amount: 20000, date: TODAY, description: null }, TODAY)).toMatchObject({ title: "Conta", state: "today" });
     expect(billNotice({ id: "c", amount: 100, date: "2026-11-27", description: "Luz" }, TODAY).detail).toMatch(/vence 27\/11$/);
   });
+
+  it("assinatura fala em renovar", () => {
+    const sub = { id: "s", amount: 5590, description: "Netflix", subscription: true };
+    expect(billNotice({ ...sub, date: "2026-11-27" }, TODAY).detail).toMatch(/renova 27\/11$/);
+    expect(billNotice({ ...sub, date: TODAY }, TODAY).detail).toMatch(/renova hoje$/);
+    expect(billNotice({ ...sub, date: "2026-11-20" }, TODAY).detail).toMatch(/renovou 20\/11$/);
+    expect(billNotice({ ...sub, date: TODAY, description: null }, TODAY).title).toBe("Assinatura");
+  });
 });
 
 describe("sortNotices", () => {

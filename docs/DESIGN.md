@@ -22,7 +22,8 @@ as peças reutilizáveis, em `src/components/`. O estilo nasceu de um painel de 
 | Parte | Onde | O que faz |
 |---|---|---|
 | Cena | `components/shell/scenery.tsx` | foto fixa do módulo, filtro quente, troca suave entre cenas |
-| Barra do topo | `components/shell/top-bar.tsx` | marca + data, busca/registro, "+ Novo" (Finanças), tema, avisos, sair |
+| Barra do topo | `components/shell/top-bar.tsx` | marca + data (abaixo de 400 px, só o logo), busca/registro, "+ Novo" (Finanças), ocultar valores, tema, avisos, sair |
+| Ocultar valores | `components/shell/privacy-toggle.tsx` + `lib/privacy.ts` | o olho embaça todo valor em reais (ver abaixo) |
 | Busca/registro | `components/shell/ask-bar.tsx` | abre com clique, **Ctrl+K** ou **/**; busca telas e registra gastos, tarefas, lembretes e notas (mesmo interpretador do Registrar, sem IA) |
 | Avisos | `components/shell/notices-button.tsx` + `server/notices.ts` | sino com ponto coral: tarefas atrasadas/de hoje e contas vencidas ou que vencem em até 3 dias |
 | Palco | `app/(app)/layout.tsx` | o painel de vidro grande onde a tela acontece |
@@ -118,7 +119,35 @@ Feitos à mão em SVG/HTML (`components/viz/`), seguindo o guia de visualizaçã
 | `ActivityTable` | `components/transactions/activity-table.tsx` | últimas movimentações com busca e filtro |
 | `MonthSwitcher` | `components/month-switcher.tsx` | pílula de período (?mes=) |
 | `TaskCard` | `components/routine/task-card.tsx` | cartão do quadro de tarefas (raias por prazo) |
+| `TodayAllowance` | `components/health/today-allowance.tsx` | "Hoje você ainda pode gastar" (dourado, o destaque do Início) |
+| `ReservePanel` | `components/accounts/reserve-panel.tsx` | reserva em meses, com medidor de 0 a 6 e marca em 3 |
+| `SubscriptionsCard` | `components/recurrences/subscriptions-card.tsx` | assinaturas: total por mês e por ano, próxima renovação |
+| `HabitYearMap` | `components/routine/habit-year.tsx` | mapa do ano dos hábitos (setas do teclado + tabela) |
+| `Money` / `MoneyText` | `components/app/money.tsx` | marcam valores em reais para o "ocultar valores" |
 | `Card`, `Button`, `Input`, `Dialog`, `Badge` | `components/ui/` | base shadcn (Base UI) já no estilo vidro |
+
+## Ocultar valores
+
+O olho da barra do topo liga um modo que **embaça todo valor em reais** (para abrir o app em público).
+A preferência fica no navegador (vale para aquele aparelho) e um script no `<head>` aplica o modo
+antes da primeira pintura, então os números nunca aparecem por um instante.
+
+Regra para telas novas: **todo valor em reais precisa estar marcado.**
+- `Count` com formato `brl` já se marca sozinho.
+- Valor solto no JSX: `<Money>{formatBRL(v)}</Money>`.
+- Frase com valor no meio: `<MoneyText>{frase}</MoneyText>` (só os valores somem).
+- Rótulos de eixo e dicas dos gráficos: classe `money`.
+- `Metric` (rodapé) e "Ver como tabela" já passam o texto pelo `MoneyText`.
+
+Leitores de tela continuam lendo os valores. Texto livre escrito pela pessoa (notas) não é escondido.
+
+## Mapa do ano (hábitos)
+
+Escala de **um só tom** (o dourado dos hábitos, `--series-habit`), em 5 passos: nada feito (trilho),
+até 1/3, até 2/3, quase tudo e tudo. Dia sem hábito previsto = só o contorno. O tamanho do
+quadradinho acompanha a largura do painel (11 a 18 px); no celular o mapa rola por dentro e abre
+nas semanas mais recentes. Legenda "Menos → Mais", leitura do dia ao passar o mouse ou pelas setas
+(aviso para leitores de tela) e "Ver como tabela" por mês.
 
 ## Padrões de página
 

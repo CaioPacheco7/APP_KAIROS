@@ -16,6 +16,7 @@ import { ContributionDialog } from "@/components/planning/contribution-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Count } from "@/components/viz/count";
+import { Money, MoneyText } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { deleteGoalAction } from "@/server/goals";
@@ -126,7 +127,7 @@ export default async function PlanejarPage() {
                           <div className="min-w-0">
                             <p className="truncate font-medium">{goal.title}</p>
                             <p className="text-xs text-muted-foreground">
-                              {isDebt ? "Dívida" : "Meta"} · {formatBRL(monthly)} por mês
+                              {isDebt ? "Dívida" : "Meta"} · <Money>{formatBRL(monthly)}</Money> por mês
                               {goal.months_planned ? ` · ${goal.months_planned} meses` : ""}
                             </p>
                           </div>
@@ -147,7 +148,7 @@ export default async function PlanejarPage() {
                             <span className="text-2xl text-muted-foreground">%</span>
                           </p>
                           <p className="pb-1 text-right text-xs text-muted-foreground tabular-nums">
-                            {formatBRL(done)} de {formatBRL(target)}
+                            <Money>{formatBRL(done)}</Money> de <Money>{formatBRL(target)}</Money>
                           </p>
                         </div>
                         <div
@@ -166,7 +167,7 @@ export default async function PlanejarPage() {
                         <p className="text-sm text-muted-foreground tabular-nums">
                           {finished
                             ? "Plano concluído. Parabéns!"
-                            : `Faltam ${formatBRL(left)}${monthsLeft ? ` · cerca de ${monthsLeft} ${monthsLeft === 1 ? "mês" : "meses"}` : ""}`}
+                            : <MoneyText>{`Faltam ${formatBRL(left)}${monthsLeft ? ` · cerca de ${monthsLeft} ${monthsLeft === 1 ? "mês" : "meses"}` : ""}`}</MoneyText>}
                         </p>
                       </div>
 

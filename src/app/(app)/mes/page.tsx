@@ -14,6 +14,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { HealthCard } from "@/components/health/health-card";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { RecurrenceDialog } from "@/components/recurrences/recurrence-dialog";
+import { SubscriptionsCard } from "@/components/recurrences/subscriptions-card";
 import { Metric } from "@/components/viz/metric";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatDayMonth, monthBounds, parseMonth } from "@/lib/dates";
+import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { summarizeSubscriptions } from "@/lib/finance/subscriptions";
 import { getMonthSnapshot } from "@/server/health";
-import { getFormOptions, getRecurrences } from "@/server/queries";
+import { getCategoryNames, getFormOptions, getRecurrences } from "@/server/queries";
 import { removeRecurrenceAction, setPaidAction } from "@/server/recurrences";
 
 export const metadata = { title: "Meu mês · KAIROS" };
@@ -59,7 +62,7 @@ export default async function MesPage({
 
   const { start, end } = monthBounds(month);
   const db = await createClient();
-  const [{ data }, recurrences] = await Promise.all([
+  const [{ data }, recurrences, categoryNames] = await Promise.all([
     db
       .from("transactions")
       .select("id, type, amount, date, status, description")
@@ -69,7 +72,9 @@ export default async function MesPage({
       .lt("date", end)
       .order("date", { ascending: true }),
     getRecurrences(),
+    getCategoryNames(),
   ]);
+  const subscriptions = summarizeSubscriptions(recurrences, categoryNames, today);
 
   const instances = (data ?? []) as Instance[];
   const incomes = instances.filter((i) => i.type === "income");
@@ -153,6 +158,13 @@ export default async function MesPage({
         </Card>
       </section>
 
+      <SubscriptionsCard
+        {...subscriptions}
+        fixedTotal={billsTotal}
+        className="animate-rise"
+        style={{ "--d": "250ms" } as React.CSSProperties}
+      />
+
       <Card className="animate-rise" style={{ "--d": "280ms" } as React.CSSProperties}>
         <CardHeader>
           <CardTitle>Contas fixas cadastradas</CardTitle>
@@ -188,7 +200,7 @@ export default async function MesPage({
                     <p className="text-xs text-muted-foreground">todo mês</p>
                   </div>
                   <p className={cn("shrink-0 text-[0.9375rem] font-medium tabular-nums", r.kind === "income" && "text-money-in")}>
-                    {formatBRL(r.amount)}
+                    <Money>{formatBRL(r.amount)}</Money>
                   </p>
                   <div className="flex shrink-0 items-center">
                     <RecurrenceDialog accounts={accountOptions} categories={categoryOptions} recurrence={r} />
@@ -255,7 +267,7 @@ function InstanceRow({ item, today }: { item: Instance; today: string }) {
       </div>
 
       <p className={cn("shrink-0 text-[0.875rem] font-bold tabular-nums sm:text-[0.9375rem]", isIncome && !settled && "text-money-in")}>
-        {formatBRL(item.amount)}
+        <Money>{formatBRL(item.amount)}</Money>
       </p>
 
       {/* no celular o botão vira só ícone (o nome continua para leitores de tela) */}

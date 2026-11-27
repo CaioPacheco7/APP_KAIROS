@@ -1,5 +1,6 @@
 import { IconChip } from "@/components/app/icon-chip";
 import { formatDayMonth } from "@/lib/dates";
+import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { transactionIcon } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
@@ -70,7 +71,7 @@ export function TransactionItem({
         )}
       >
         {t.type === "income" ? "+ " : t.type === "expense" ? "− " : "⇄ "}
-        {formatBRL(t.amount)}
+        <Money>{formatBRL(t.amount)}</Money>
       </p>
       {actions}
     </li>

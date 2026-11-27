@@ -207,6 +207,13 @@ Dashboard mostra: tarefas de hoje, hábitos pendentes, contas que vencem nos pr�
 - **RN-25** **Planejar uma conquista:** sobra = renda − gastos mensais. Cenários: no ritmo com folga (90% da sobra), usando toda a sobra, e no prazo desejado (mostra quanto falta quando não cabe). Rendimento é opcional e informado pela pessoa. É simulação, não recomendação de investimento.
 - **RN-26** **Planejar sair de dívida:** sobra = renda − gastos essenciais. Compara parcelamentos (3 a 36x, tabela Price com os juros informados) e pagar com 80% da sobra. Recomenda o prazo mais curto cuja parcela cabe com folga; avisa quando nada cabe e orienta a negociar. Sem juros informados, avisa que o custo real é maior.
 
+### Pacote rápido (ideias do levantamento de apps de sucesso)
+- **RN-27** **Hoje você ainda pode gastar:** limite do dia = (renda do mês − comprometido + gastos do dia a dia lançados hoje) ÷ dias que faltam no mês, contando hoje. O limite é calculado com a sobra do começo do dia, para não encolher a cada gasto; os gastos de hoje saem dele. Passou do limite: mostra quanto, com ícone e texto. Sem folga no mês: limite zero e um aviso. Só no mês em andamento e com renda informada.
+- **RN-28** **Assinaturas** são as contas fixas de despesa na categoria "Assinaturas" (sem ligar para acento e maiúsculas). Total por ano = total por mês × 12. A próxima cobrança segue a regra das contas fixas (dia 31 em mês curto = último dia). No sino, o aviso de uma assinatura fala em "renova" (3 dias antes, como as contas).
+- **RN-29** **Reserva em meses** = saldo total ÷ gasto mensal médio (pagos + agendados) dos últimos 3 meses com movimento; sem histórico, usa o que já está comprometido no mês. Saldo zero ou negativo cobre 0 mês. Referência mostrada: de 3 a 6 meses.
+- **RN-30** **Força do hábito** (0 a 100%): média com mais peso nos dias recentes; cada dia previsto feito puxa para cima e cada falta puxa para baixo, sem zerar (meia-vida de 13 dias previstos). Dias fora da agenda e antes da criação não contam; o dia de hoje só conta depois de feito. Fases: começando (< 25%), pegando ritmo, firme (≥ 50%), consolidado (≥ 75%).
+- **RN-31** **Ocultar valores** é uma preferência do aparelho (fica no navegador), não da conta.
+
 ---
 
 ## 8. Estrutura do banco de dados (PostgreSQL / Supabase)
@@ -328,6 +335,18 @@ Princípio: **usar o app o mais cedo possível**. Cada fase termina com algo que
 - **Semáforo de saúde financeira** 🟢🟡🔴 no dashboard e em Meu mês, com mensagem e projeção do ritmo de gastos
 - **Planejar:** simulador de **conquista** (ex.: moto de R$ 23.000 com renda 2.500 e gastos 1.700: quanto guardar por mês e em quanto tempo) e de **saída de dívida** (ex.: cartão de R$ 1.900 com renda 1.500: compara parcelamentos), com planos salvos e progresso por aporte/pagamento
 - Sem IA: tudo é cálculo transparente com os números informados pela pessoa
+
+### Pacote rápido (branch `feature/pacote-rapido`, sobre o design vidro)
+
+> Decisão de 26/11/2026: depois de um levantamento de apps de sucesso (Mobills, Organizze, YNAB, Monarch, Copilot, PocketGuard, Rocket Money, Loop, Daylio, Sunsama...), entram primeiro as ideias pequenas que usam dados que o app já tem. Sem migration nova.
+
+- **Hoje você ainda pode gastar** no Início (RN-27)
+- **Ocultar valores** com o olho da barra do topo (RN-31)
+- **Assinaturas** em Meu mês, com aviso de renovação no sino (RN-28)
+- **Reserva em meses** em Contas (RN-29)
+- **Força do hábito** em cada hábito e **mapa do ano** na Rotina (RN-30)
+
+Próximos candidatos do levantamento: app instalável + notificações (tira PWA e push do parking lot), revisão semanal e retrospectiva do mês (dinheiro + rotina numa tela), tarefas recorrentes, colar a notificação do banco no Registrar, e testar o Open Finance gratuito para uso pessoal (Meu Pluggy).
 
 ### Fase 2 — Cartões e orçamento
 - Cartões, faturas, parcelamento, pagamento de fatura

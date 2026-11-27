@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { MoneyText } from "@/components/app/money";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { Notice } from "@/lib/notices";
 import { cn } from "@/lib/utils";
@@ -89,7 +90,7 @@ export function NoticesButton({ items }: { items: Notice[] }) {
                           ) : (
                             <ClockIcon className="size-3" aria-hidden />
                           )}
-                          {item.detail}
+                          <MoneyText>{item.detail}</MoneyText>
                         </small>
                       </span>
                       <ArrowRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />

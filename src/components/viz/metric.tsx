@@ -1,4 +1,5 @@
 import { ArrowDownRightIcon, ArrowUpRightIcon, MinusIcon, type LucideIcon } from "lucide-react";
+import { MoneyText } from "@/components/app/money";
 import { cn } from "@/lib/utils";
 import { deltaTone, formatPct } from "@/lib/viz";
 import { Count, type CountFormat } from "./count";
@@ -89,7 +90,9 @@ export function Metric({
       <strong className="mt-1 mb-1.5 block text-[clamp(1.3rem,2vw,1.85rem)] leading-[1.05] font-extrabold tracking-[-0.052em]">
         <Count value={value} format={format} />
       </strong>
-      <div className="min-w-0 text-[0.6875rem] text-muted-foreground">{footer}</div>
+      <div className="min-w-0 text-[0.6875rem] text-muted-foreground">
+        {typeof footer === "string" ? <MoneyText>{footer}</MoneyText> : footer}
+      </div>
     </article>
   );
 }
@@ -155,7 +158,7 @@ export function ChartTable({
                     </th>
                   ) : (
                     <td key={i} className="py-1 text-right">
-                      {cell}
+                      {typeof cell === "string" ? <MoneyText>{cell}</MoneyText> : cell}
                     </td>
                   ),
                 )}

@@ -263,6 +263,22 @@
   font-variant-numeric: normal;
 }
 
+/* Ocultar valores: o olho da barra do topo põe data-privacy="on" no <html> e
+   todo valor em reais (classe .money) fica embaçado e não selecionável. Serve
+   para abrir o app em público; leitores de tela continuam lendo os valores. */
+.money {
+  transition: filter 0.2s ease;
+}
+html[data-privacy="on"] .money {
+  filter: blur(0.3em);
+  user-select: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .money {
+    transition: none;
+  }
+}
+
 /* ---------------------------------------------------------------------
    Utilitários do vidro
    --------------------------------------------------------------------- */

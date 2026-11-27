@@ -39,6 +39,8 @@ export type BillInput = {
   amount: number;
   date: string;
   description: string | null;
+  /** conta fixa na categoria Assinaturas: o aviso fala em "renova" */
+  subscription?: boolean;
 };
 
 export function taskNotice(task: TaskInput, today: string): Notice {
@@ -63,16 +65,17 @@ export function taskNotice(task: TaskInput, today: string): Notice {
 
 export function billNotice(bill: BillInput, today: string): Notice {
   const state = dueState(bill.date, today);
+  const verb = bill.subscription ? "renova" : "vence";
   const when =
     state === "overdue"
-      ? `venceu ${formatDayMonth(bill.date)}`
+      ? `${bill.subscription ? "renovou" : "venceu"} ${formatDayMonth(bill.date)}`
       : state === "today"
-        ? "vence hoje"
-        : `vence ${formatDayMonth(bill.date)}`;
+        ? `${verb} hoje`
+        : `${verb} ${formatDayMonth(bill.date)}`;
   return {
     id: `bill-${bill.id}`,
     kind: "bill",
-    title: bill.description ?? "Conta",
+    title: bill.description ?? (bill.subscription ? "Assinatura" : "Conta"),
     detail: `${formatBRL(bill.amount)} · ${when}`,
     href: "/mes",
     state,

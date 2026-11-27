@@ -1,5 +1,6 @@
 import { IconChip } from "@/components/app/icon-chip";
 import { transactionIcon } from "@/lib/category-icons";
+import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 
 export type CategoryItem = { label: string; total: number };
@@ -43,7 +44,7 @@ export function CategoryBars({ items }: { items: CategoryItem[] }) {
           <div className="flex min-w-0 items-baseline justify-between gap-3 text-[0.8125rem]">
             <span className="truncate font-semibold">{row.label}</span>
             <span className="shrink-0 font-bold tabular-nums">
-              {formatBRL(row.total)}
+              <Money>{formatBRL(row.total)}</Money>
               <span className="ml-1.5 text-[0.6875rem] font-semibold text-muted-foreground">
                 {Math.round((row.total / grand) * 100)}%
               </span>
