@@ -15,6 +15,8 @@ import { HealthCard } from "@/components/health/health-card";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { RecurrenceDialog } from "@/components/recurrences/recurrence-dialog";
 import { SubscriptionsCard } from "@/components/recurrences/subscriptions-card";
+import { BudgetCard } from "@/components/budget/budget-card";
+import { getBudgetOverview } from "@/server/budget-data";
 import { Metric } from "@/components/viz/metric";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,7 +64,7 @@ export default async function MesPage({
 
   const { start, end } = monthBounds(month);
   const db = await createClient();
-  const [{ data }, recurrences, categoryNames] = await Promise.all([
+  const [{ data }, recurrences, categoryNames, budget] = await Promise.all([
     db
       .from("transactions")
       .select("id, type, amount, date, status, description")
@@ -73,6 +75,7 @@ export default async function MesPage({
       .order("date", { ascending: true }),
     getRecurrences(),
     getCategoryNames(),
+    getBudgetOverview(month, today),
   ]);
   const subscriptions = summarizeSubscriptions(recurrences, categoryNames, today);
 
@@ -105,7 +108,7 @@ export default async function MesPage({
       <div className="glass-inner animate-rise grid grid-cols-2 gap-[7px] rounded-[20px] p-1.5 lg:grid-cols-4" style={{ "--d": "120ms" } as React.CSSProperties}>
         <Metric label="Renda do mês" icon={ArrowDownLeftIcon} value={snapshot.income} footer={`${formatBRL(snapshot.incomeSettled)} já recebido`} />
         <Metric label="Contas fixas" icon={CalendarClockIcon} value={billsTotal} footer={`${formatBRL(billsPaid)} já pago`} />
-        <Metric label="Gasto total do mês" icon={ReceiptTextIcon} value={snapshot.committed} footer="fixas + dia a dia" />
+        <Metric label="Gasto total do mês" icon={ReceiptTextIcon} value={snapshot.committed} footer="fixas, dia a dia e cartão" />
         <Metric
           label="Sobra prevista"
           icon={PiggyBankIcon}
@@ -157,6 +160,13 @@ export default async function MesPage({
           </CardContent>
         </Card>
       </section>
+
+      <BudgetCard
+        overview={budget}
+        categories={categories.filter((c) => c.type === "expense").map((c) => ({ id: c.id, name: c.name }))}
+        className="animate-rise"
+        style={{ "--d": "240ms" } as React.CSSProperties}
+      />
 
       <SubscriptionsCard
         {...subscriptions}

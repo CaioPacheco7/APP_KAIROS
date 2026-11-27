@@ -117,9 +117,10 @@ Estrutura atual (decisão de 14/11/2026): o app abre no **Início**, com os seto
 
 Finanças  (/financas → /dashboard)
 ├── /dashboard                   Visão geral: saldo, indicadores, semáforo, contas a pagar, planos, gráficos
-├── /mes                         Meu mês: entradas, contas do mês (Paguei/Recebi), contas fixas
-├── /transacoes                  Movimentações por dia, com filtros
-├── /contas                      Contas e saldos
+├── /mes                         Meu mês: entradas, contas do mês (Paguei/Recebi), orçamento, assinaturas, contas fixas
+├── /transacoes                  Movimentações por dia, com filtros (conta ou cartão, categoria, tipo)
+├── /contas                      Contas, saldos e reserva em meses
+├── /cartoes                     Cartões: fatura atual, limite, faturas mês a mês (?cartao=&fatura=), pagar fatura
 └── /planejar                    Planos
     ├── /conquista               Simulador: conquistar algo
     └── /divida                  Simulador: sair de uma dívida
@@ -130,11 +131,11 @@ Finanças  (/financas → /dashboard)
 **Navegação (design "vidro", branch `feature/design-vidro`):** doca lateral com os módulos (Início, Finanças, Rotina,
 Registrar) e doca de baixo com as abas do módulo atual; no celular, doca fixa embaixo com os módulos e as abas no
 topo da tela. Na barra do topo: **busca e registro rápido** (clique, Ctrl+K ou "/": vai para qualquer tela ou registra
-"café 12,50", "tarefa: …", "lembrar de …", "anotar: …"), **sino de avisos** (atrasos, o que é para hoje e contas que
-vencem em até 3 dias), botão **"+ Novo"** (transação, dentro de Finanças), tema claro/noturno e sair. Cada módulo tem
+"café 12,50", "tarefa: …", "lembrar de …", "anotar: …"), **sino de avisos** (atrasos, o que é para hoje, contas e faturas que
+vencem em até 3 dias e orçamento a partir de 80%), botão **"+ Novo"** (transação na conta ou no cartão, dentro de Finanças), ocultar valores, tema claro/noturno e sair. Cada módulo tem
 uma foto de fundo própria. Visual detalhado em `DESIGN.md`.
 
-Ainda por vir: cartões, orçamento por categoria, relatórios, configurações.
+Ainda por vir: relatórios, configurações (gerenciar categorias).
 
 ---
 
@@ -214,6 +215,15 @@ Dashboard mostra: tarefas de hoje, hábitos pendentes, contas que vencem nos pr�
 - **RN-30** **Força do hábito** (0 a 100%): média com mais peso nos dias recentes; cada dia previsto feito puxa para cima e cada falta puxa para baixo, sem zerar (meia-vida de 13 dias previstos). Dias fora da agenda e antes da criação não contam; o dia de hoje só conta depois de feito. Fases: começando (< 25%), pegando ritmo, firme (≥ 50%), consolidado (≥ 75%).
 - **RN-31** **Ocultar valores** é uma preferência do aparelho (fica no navegador), não da conta.
 
+### Fase 2: como cartões e orçamento ficaram (detalham RN-05 a RN-09 e RN-12)
+- **RN-32** **Fatura** é identificada pelo mês do **vencimento** ("fatura de dezembro"). Vencimento depois do fechamento = fecha e vence no mesmo mês; senão, vence no mês seguinte. Dia 31 em mês curto = último dia. Fechamento e vencimento no mesmo dia não são aceitos.
+- **RN-33** **Compra no cartão** é uma despesa sem conta (o dinheiro sai do banco só quando a fatura é paga) e já nasce efetivada. Só despesas entram no cartão (estorno fica para depois).
+- **RN-34** **Parcelas:** de 2 a 48. Cada parcela fica no mesmo dia da compra, mês a mês (dia 31 vira o último dia do mês curto), e conta como gasto **no mês dela**: uma compra de R$ 1.200 em 12x pesa R$ 100 por mês no semáforo e no orçamento. No semáforo, as parcelas a partir da 2ª são compromisso conhecido desde o início do mês (como as contas fixas): não entram no "gasto de hoje" nem no ritmo do dia a dia.
+- **RN-35** **Situação da fatura:** aberta (ainda recebe compras), fechada (a pagar até o vencimento), vencida (passou do vencimento com saldo), paga, ou próxima (só parcelas futuras). A tela mostra primeiro a fatura mais antiga fechada ou vencida com saldo; se não houver, a aberta.
+- **RN-36** **Pagar fatura** registra uma transferência conta → cartão, com data até hoje; pode ser parcial ou adiantada (fatura aberta). Pagamento não se edita: exclui e paga de novo. O sino avisa a fatura com saldo que vence em até 3 dias ou já venceu.
+- **RN-37** **Editar uma parcela** muda descrição e categoria da compra toda; valor e número de parcelas exigem excluir e lançar de novo. **Excluir** pergunta: só esta, esta e as próximas, ou a compra toda (RN-09).
+- **RN-38** **Orçamento:** o limite vale do mês em que foi definido em diante, até ser trocado; tirar o limite grava zero a partir daquele mês (o histórico fica). O gasto da categoria soma pago, agendado e cartão (parcelas no mês de cada uma). Status com ícone e texto: dentro, acima do ritmo (gastou uma fração do limite maior que a fração do mês que já passou), perto do limite (≥ 80%) e passou/chegou ao limite (≥ 100%). O sino avisa a partir de 80%.
+
 ---
 
 ## 8. Estrutura do banco de dados (PostgreSQL / Supabase)
@@ -231,10 +241,9 @@ Convenções: `id uuid pk default gen_random_uuid()`, `user_id uuid not null ref
 | `accounts` | name, type (`checking`/`savings`/`wallet`/`investment`), initial_balance, color, archived_at |
 | `categories` | name, type (`income`/`expense`), parent_id, icon, color, archived_at |
 | `credit_cards` | name, credit_limit, closing_day, due_day, default_account_id (p/ pagamento), archived_at |
-| `card_invoices` | card_id, reference_month, closing_date, due_date, status (`open`/`closed`/`paid`), paid_transaction_id |
-| `transactions` | type, amount, date, status, description, account_id, category_id, card_id, invoice_id, transfer_account_id, installment_group_id, installment_number, installment_total, recurrence_id, notes |
+| `transactions` | type, amount, date, status, description, account_id (nulo na compra no cartão), category_id, card_id, invoice_month (1º dia do mês do vencimento), transfer_account_id, installment_group_id, installment_number, installment_total, recurrence_id, recurrence_month, notes |
 | `tags` / `transaction_tags` | tag e relação N:N com transações |
-| `budgets` | category_id, month, amount |
+| `budgets` | category_id, month (1º dia; vale daí em diante), amount (0 = sem limite); único por usuário+categoria+mês |
 | `recurrences` | template da transação, frequency, interval, starts_on, ends_on, next_run |
 | `investment_snapshots` | account_id, date, balance, contributions (evolução simples) |
 
@@ -253,16 +262,19 @@ Convenções: `id uuid pk default gen_random_uuid()`, `user_id uuid not null ref
 | `goal_contributions` | goal_id, amount, date, transaction_id (opcional) |
 
 ### Relações importantes
-- `transactions.account_id` → `accounts`; `transactions.card_id` e `invoice_id` quando for compra no cartão.
+- `transactions.account_id` → `accounts`; na compra no cartão, `card_id` + `invoice_month` e **sem** `account_id`.
 - Transferência: `account_id` (origem) + `transfer_account_id` (destino); sem categoria.
-- Pagamento de fatura: transferência com `card_invoices.paid_transaction_id` apontando para ela.
+- Pagamento de fatura: transferência com `account_id` (origem) + `card_id` + `invoice_month`, sem destino nem categoria.
+  A constraint `transactions_shape` garante esses quatro formatos (decisão da Fase 2: a fatura não é tabela, é a soma
+  das transações do mês; assim não há status para sincronizar).
 
 ### Views para os dashboards
 - `v_account_balances` — saldo atual por conta (RN-02)
 - `v_monthly_summary` — receitas, despesas e saldo por mês
 - `v_spending_by_category` — gasto por categoria/mês
-- `v_budget_vs_actual` — orçamento vs realizado
+- `v_card_invoices` — compras, pagos e nº de itens por cartão e mês da fatura (a situação da fatura e o limite são calculados em `lib/finance/cards.ts`)
 - `v_goal_progress` — progresso e previsão por meta
+- Orçamento vs realizado: calculado em `lib/finance/budget.ts` (limites vigentes + `v_spending_by_category`)
 
 Índices mínimos: `(user_id, date)` e `(user_id, category_id, date)` em `transactions`; `(user_id, month)` em `budgets`.
 
@@ -348,11 +360,17 @@ Princípio: **usar o app o mais cedo possível**. Cada fase termina com algo que
 
 Próximos candidatos do levantamento: app instalável + notificações (tira PWA e push do parking lot), revisão semanal e retrospectiva do mês (dinheiro + rotina numa tela), tarefas recorrentes, colar a notificação do banco no Registrar, e testar o Open Finance gratuito para uso pessoal (Meu Pluggy).
 
-### Fase 2 — Cartões e orçamento
-- Cartões, faturas, parcelamento, pagamento de fatura
-- Orçamento por categoria + alertas (ex.: "alimentação até R$ 600")
-- Dashboard: orçamento vs realizado, faturas a vencer
+### Fase 2 — Cartões e orçamento (branch `feature/cartoes-e-orcamento`, sobre o pacote rápido)
+
+> Feita em 27/11/2026. Precisa da migration 6 (`20261127090000_cartoes_e_orcamento.sql`) no Supabase antes de usar.
+
+- **Cartões** (aba nova): fatura atual com situação, limite usado contando as parcelas futuras, faturas mês a mês com compras e pagamentos, pagar fatura (toda, parte ou adiantada), parcelas que já estão por vir (RN-32 a RN-37)
+- **"+ Novo"**: "Conta ou cartão", parcelas de 1 a 48 com prévia ("3x de R$ 33,33") e em qual fatura a compra entra
+- **Orçamento por categoria** em Meu mês, com ritmo do mês, sugestão pela média recente e alertas no sino em 80% e 100% (RN-38)
+- **Visão geral**: faturas do mês em "Contas a pagar" e o limite do orçamento como traço em "Para onde foi o dinheiro"
+- Transações: filtro por conta **ou cartão**; cada item mostra o cartão e "parcela 2/10"
 - (Recorrências já entregues na Fase 1.5)
+- **Ainda fora:** conta fixa/assinatura cobrada no cartão (hoje a recorrência sai de uma conta), estorno no cartão, lançar no cartão pelo Registrar (chat), subcategorias na tela (o orçamento já soma a categoria-pai)
 
 ### Fase 3 — Objetivos pessoais
 - Metas não financeiras (marcos e prazos)

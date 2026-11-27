@@ -12,18 +12,20 @@ import {
  */
 export function useServerForm(
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>,
-  onSuccess?: () => void,
+  onSuccess?: (result: Extract<ActionState, { status: "success" }>) => void,
 ) {
   const [state, setState] = useState<ActionState>(initialActionState);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    // inclui o botão que enviou (ex.: "Tirar limite" com name/value próprios)
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const formData = new FormData(event.currentTarget, submitter instanceof HTMLButtonElement && submitter.name ? submitter : null);
     startTransition(async () => {
       const result = await action(state, formData);
       setState(result);
-      if (result.status === "success") onSuccess?.();
+      if (result.status === "success") onSuccess?.(result);
     });
   }
 

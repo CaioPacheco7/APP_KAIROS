@@ -18,7 +18,7 @@ export type HealthInput = {
   income: number;
   /** despesas do mês já pagas + agendadas */
   committed: number;
-  /** parte de `committed` que vem de contas fixas (recorrências) */
+  /** parte de `committed` já conhecida desde o início do mês: contas fixas e parcelas do cartão */
   fixed: number;
   /** parte de `committed` que NÃO é fixa (gastos do dia a dia) */
   variable: number;

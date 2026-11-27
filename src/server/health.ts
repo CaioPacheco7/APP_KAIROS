@@ -10,6 +10,7 @@ type Row = {
   date: string;
   status: "pending" | "settled";
   recurrence_id: string | null;
+  installment_number: number | null;
 };
 
 export type MonthSnapshot = {
@@ -35,7 +36,7 @@ export async function getMonthSnapshot(
   const [{ data }, profile] = await Promise.all([
     db
       .from("transactions")
-      .select("type, amount, date, status, recurrence_id")
+      .select("type, amount, date, status, recurrence_id, installment_number")
       .is("deleted_at", null)
       .in("type", ["income", "expense"])
       .gte("date", start)
@@ -57,7 +58,8 @@ export async function getMonthSnapshot(
     } else {
       committed += amount;
       if (row.status === "settled") expenseSettled += amount;
-      if (row.recurrence_id) fixed += amount;
+      // contas fixas e parcelas a partir da 2ª: compromisso conhecido desde o início do mês
+      if (row.recurrence_id || Number(row.installment_number ?? 1) > 1) fixed += amount;
       else if (row.date === today) spentToday += amount;
     }
   }

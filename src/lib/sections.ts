@@ -10,6 +10,7 @@ export const FINANCE_PATHS = [
   "/mes",
   "/transacoes",
   "/contas",
+  "/cartoes",
   "/planejar",
 ] as const;
 
@@ -27,5 +28,6 @@ export const FINANCE_SUBNAV = [
   { href: "/mes", label: "Meu mês" },
   { href: "/transacoes", label: "Transações" },
   { href: "/contas", label: "Contas" },
+  { href: "/cartoes", label: "Cartões" },
   { href: "/planejar", label: "Planejar" },
 ] as const;
