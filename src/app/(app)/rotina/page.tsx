@@ -22,6 +22,8 @@ import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
 import { TaskCard } from "@/components/routine/task-card";
 import { TaskComposer } from "@/components/routine/task-composer";
+import { FixedReminders, type FixedReminderRow } from "@/components/routine/fixed-reminders";
+import { PushToggle } from "@/components/routine/push-toggle";
 import { TaskItem, type TaskRow } from "@/components/routine/task-item";
 import { HabitWeek } from "@/components/viz/habit-week";
 import { Metric } from "@/components/viz/metric";
@@ -41,7 +43,7 @@ const HEADERS: Record<RoutineTab, { title: string; description: string }> = {
     description: "Hábitos para marcar todo dia, a sua semana e o que vence hoje.",
   },
   tarefas: { title: "Tarefas", description: "Um quadro por prazo: o que atrasou, o que é para hoje e o que vem depois." },
-  lembretes: { title: "Lembretes", description: "Avisos com data e hora, organizados pelo prazo." },
+  lembretes: { title: "Lembretes", description: "Avisos de uma vez (dia e hora) ou fixos (todo dia, dias úteis…). O celular avisa na hora." },
   notas: { title: "Notas", description: "Seu bloco de notas: ideias, listas e lembranças." },
 };
 
@@ -252,9 +254,10 @@ async function Board({ kind, today }: { kind: "task" | "reminder"; today: string
       .from("tasks")
       .select("id, kind, title, due_date, remind_at, priority, status")
       .is("deleted_at", null)
-      .eq("kind", kind);
+      .eq("kind", kind)
+      .is("repeat_weekdays", null);
 
-  const [openRes, doneRes] = await Promise.all([
+  const [openRes, doneRes, fixedRes] = await Promise.all([
     base()
       .eq("status", "open")
       .order("due_date", { ascending: true, nullsFirst: false })
@@ -264,19 +267,31 @@ async function Board({ kind, today }: { kind: "task" | "reminder"; today: string
       .eq("status", "done")
       .order("completed_at", { ascending: false })
       .limit(15),
+    kind === "reminder"
+      ? db
+          .from("tasks")
+          .select("id, title, repeat_weekdays, remind_time, status")
+          .is("deleted_at", null)
+          .not("repeat_weekdays", "is", null)
+          .order("remind_time", { ascending: true })
+      : Promise.resolve({ data: [] }),
   ]);
+  const fixed = (fixedRes.data ?? []) as FixedReminderRow[];
   const open = (openRes.data ?? []) as TaskRow[];
   const done = (doneRes.data ?? []) as TaskRow[];
   const lanes = LANES.filter((l) => kind === "task" || l.id !== "nodate");
 
   return (
     <div className="grid grid-cols-1 gap-3">
+      {kind === "reminder" && <PushToggle />}
       <Panel
         title={kind === "reminder" ? "Novo lembrete" : "Nova tarefa"}
-        subtitle={kind === "reminder" ? "Com data e, se quiser, horário" : "Com prazo, se tiver"}
+        subtitle={kind === "reminder" ? "Uma vez (dia e hora) ou fixo (todo dia, dias úteis…)" : "Com prazo, se tiver; ou repetindo, como lembrete fixo"}
       >
         <TaskComposer kind={kind} today={today} />
       </Panel>
+
+      {kind === "reminder" && <FixedReminders items={fixed} />}
 
       {open.length === 0 ? (
         <EmptyState icon={CalendarIcon} tone="sage" title={kind === "reminder" ? "Nenhum lembrete pendente" : "Nenhuma tarefa pendente"}>

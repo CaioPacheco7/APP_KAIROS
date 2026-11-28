@@ -4,6 +4,7 @@
  */
 import { addDays, formatDayMonth } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
+import { repeatLabel } from "@/lib/reminders";
 import type { Intent } from "./parse";
 
 export type CapturePreview = {
@@ -44,8 +45,10 @@ export function capturePreview(intent: Intent, today: string): CapturePreview | 
     case "reminder":
       return {
         kind: "reminder",
-        title: `Lembrete: ${clip(intent.title, 60)}`,
-        detail: `${relativeDay(intent.date, today)}${intent.time ? ` às ${intent.time}` : ""}`,
+        title: `${intent.repeat ? "Lembrete fixo" : "Lembrete"}: ${clip(intent.title, 60)}`,
+        detail: intent.repeat
+          ? repeatLabel(intent.repeat, intent.time ?? "09:00")
+          : `${relativeDay(intent.date, today)}${intent.time ? ` às ${intent.time}` : ""}`,
       };
     case "note":
       return { kind: "note", title: "Nota", detail: clip(intent.text) };

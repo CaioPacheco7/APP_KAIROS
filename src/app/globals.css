@@ -354,6 +354,26 @@ html[data-privacy="on"] .money {
 }
 
 /*
+ * Celular: mais respiro entre os blocos do palco (o pedido da 1ª rodada de
+ * testes: "as coisas estão muito juntas"). Só abaixo de 640 px e só dentro
+ * da área de conteúdo; no computador nada muda.
+ */
+@media (max-width: 639px) {
+  #conteudo .gap-3 {
+    gap: 1rem;
+  }
+  #conteudo .gap-4 {
+    gap: 1.25rem;
+  }
+  #conteudo .gap-5 {
+    gap: 1.5rem;
+  }
+  #conteudo .gap-\[7px\] {
+    gap: 10px;
+  }
+}
+
+/*
  * Toque: links e controles pequenos ganham uma área invisível maior no
  * celular (o dedo precisa de ~44 px), sem mudar o visual nem o layout.
  */

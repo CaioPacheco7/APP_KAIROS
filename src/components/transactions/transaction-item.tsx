@@ -48,7 +48,7 @@ export function TransactionItem({
   ].filter(Boolean);
 
   return (
-    <li className={cn("group/tx flex items-center gap-2.5 py-3 sm:gap-3.5", className)}>
+    <li className={cn("group/tx flex items-center gap-3 py-3.5 sm:gap-3.5 sm:py-3", className)}>
       <IconChip
         icon={Icon}
         tone={t.type === "income" ? "sage" : "neutral"}

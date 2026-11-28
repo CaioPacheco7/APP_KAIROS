@@ -1,5 +1,4 @@
 import {
-  ArchiveIcon,
   CircleAlertIcon,
   CircleCheckIcon,
   ClockIcon,
@@ -17,7 +16,8 @@ import { PageHeader } from "@/components/app/page-header";
 import { Panel } from "@/components/app/panel";
 import { CardDialog } from "@/components/cards/card-dialog";
 import { PayInvoiceDialog } from "@/components/cards/pay-invoice-dialog";
-import { ConfirmButton } from "@/components/confirm-button";
+import { DeleteOrArchive } from "@/components/app/delete-or-archive";
+import { OpeningDialog } from "@/components/cards/opening-dialog";
 import { cardOptions } from "@/components/transactions/options";
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
@@ -27,6 +27,7 @@ import { formatDayMonth, monthShort, shiftMonth } from "@/lib/dates";
 import {
   INVOICE_STATE_LABEL,
   describeInvoice,
+  nextDueInvoice,
   invoiceName,
   invoiceWhen,
   type Invoice,
@@ -35,7 +36,8 @@ import {
 import { formatBRL } from "@/lib/money";
 import { capitalize, cn } from "@/lib/utils";
 import { getCardSummaries, getInvoiceItems, type CardSummary } from "@/server/card-data";
-import { archiveCardAction } from "@/server/cards";
+import { deleteCardAction } from "@/server/cards";
+import { createClient } from "@/lib/supabase/server";
 import { getAccountNames, getCategoryNames, getFormOptions } from "@/server/queries";
 
 export const metadata = { title: "Cartões · KAIROS" };
@@ -79,6 +81,19 @@ export default async function CartoesPage({
   const { accounts, categories, cards, today } = await getFormOptions();
   const summaries = await getCardSummaries(today);
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name }));
+  const db = await createClient();
+  const movements = new Map(
+    await Promise.all(
+      summaries.map(async (s) => {
+        const { count } = await db
+          .from("transactions")
+          .select("id", { count: "exact", head: true })
+          .is("deleted_at", null)
+          .eq("card_id", s.card.id);
+        return [s.card.id, count ?? 0] as const;
+      }),
+    ),
+  );
 
   const selected =
     summaries.find((s) => s.card.id === single(sp.cartao) && UUID_RE.test(single(sp.cartao) ?? "")) ?? summaries[0];
@@ -89,7 +104,7 @@ export default async function CartoesPage({
         eyebrow="Finanças"
         title="Cartões"
         description="Faturas, parcelas e limite. A compra no cartão conta como gasto no dia; pagar a fatura só tira o dinheiro da conta."
-        actions={<CardDialog accounts={accountOptions} />}
+        actions={<CardDialog accounts={accountOptions} today={today} />}
       />
 
       {summaries.length === 0 ? (
@@ -108,6 +123,7 @@ export default async function CartoesPage({
                   accounts={accountOptions}
                   today={today}
                   showLink={summaries.length > 1}
+                  movements={movements.get(s.card.id) ?? 0}
                 />
               </li>
             ))}
@@ -137,12 +153,14 @@ function CardTile({
   accounts,
   today,
   showLink,
+  movements,
 }: {
   summary: CardSummary;
   active: boolean;
   accounts: { id: string; name: string }[];
   today: string;
   showLink: boolean;
+  movements: number;
 }) {
   const { card, current, usage } = summary;
   const canPay = current.remaining > 0 && current.state !== "future";
@@ -162,21 +180,6 @@ function CardTile({
               fecha dia {card.closing_day} · vence dia {card.due_day}
             </p>
           </div>
-        </div>
-        <div className="flex shrink-0 items-center">
-          <CardDialog card={card} accounts={accounts} />
-          <form action={archiveCardAction}>
-            <input type="hidden" name="id" value={card.id} />
-            <ConfirmButton
-              message={`Arquivar "${card.name}"? Ele some das telas e dos formulários, mas as compras e faturas ficam no histórico.`}
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Arquivar ${card.name}`}
-              className="text-muted-foreground"
-            >
-              <ArchiveIcon />
-            </ConfirmButton>
-          </form>
         </div>
       </div>
 
@@ -256,6 +259,11 @@ function CardTile({
             Ver faturas
           </Link>
         )}
+      </div>
+      <div className="-mx-1 -mb-1 flex flex-wrap items-center gap-1 border-t border-line pt-2">
+        <CardDialog card={card} accounts={accounts} today={today} />
+        <OpeningDialog cardId={card.id} cardName={card.name} dueLabel={formatDayMonth(nextDueInvoice(summary.cycle, today).due)} />
+        <DeleteOrArchive id={card.id} name={card.name} noun="cartão" movements={movements} action={deleteCardAction} />
       </div>
     </article>
   );

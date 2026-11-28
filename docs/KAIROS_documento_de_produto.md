@@ -224,6 +224,14 @@ Dashboard mostra: tarefas de hoje, hábitos pendentes, contas que vencem nos pr�
 - **RN-37** **Editar uma parcela** muda descrição e categoria da compra toda; valor e número de parcelas exigem excluir e lançar de novo. **Excluir** pergunta: só esta, esta e as próximas, ou a compra toda (RN-09).
 - **RN-38** **Orçamento:** o limite vale do mês em que foi definido em diante, até ser trocado; tirar o limite grava zero a partir daquele mês (o histórico fica). O gasto da categoria soma pago, agendado e cartão (parcelas no mês de cada uma). Status com ícone e texto: dentro, acima do ritmo (gastou uma fração do limite maior que a fração do mês que já passou), perto do limite (≥ 80%) e passou/chegou ao limite (≥ 100%). O sino avisa a partir de 80%.
 
+### Rodada 1 de testes no celular (27/11/2026)
+- **RN-39** **Antes de começar a usar o app:** conta paga ou salário recebido antes de a pessoa começar fica como efetivado e marcado `before_start`. Conta no mês (semáforo, orçamento), mas **não mexe no saldo**, porque o saldo informado na entrevista já reflete. Na entrevista, se o vencimento já passou no mês, o app pergunta "já paguei/já recebi". Depois, ao tocar em "Paguei/Recebi" numa conta que venceu antes do dia em que a pessoa começou, o app pergunta: antes de começar (não mexe no saldo) ou agora (desconta/soma).
+- **RN-40** **Lembrete fixo:** repete nos dias escolhidos (todo dia, dias úteis, fim de semana ou dias à escolha) num horário, sem data. Pausar = não avisa até retomar. No Registrar: "beber água todo dia às 10h", "tomar remédio dias úteis 8h", "toda segunda e quinta" (sem horário: 9h).
+- **RN-41** **Saldo anterior do cartão:** ao cadastrar o cartão (ou em "Informar fatura atual"), o valor que já está na próxima fatura a vencer (a fechada que ainda não venceu, senão a aberta) e parcelas de compras antigas nas faturas seguintes. Entram como compras "antes de começar": aparecem na fatura e no limite, contam no mês como compromisso conhecido, não como gasto de hoje.
+- **RN-42** **Registrar entende afazeres:** texto sem valor em dinheiro que começa com intenção ("preciso", "tenho que", "não esquecer") ou com verbo de afazer ("criar", "ligar", "pagar"…) vira tarefa; com horário, lembrete; com repetição, lembrete fixo. Com "R$"/"reais" continua sendo gasto. Conversa solta ("oi tudo bem") não registra nada.
+- **RN-43** **Notificações no celular (Web Push):** a pessoa ativa por aparelho (Rotina → Lembretes). Um relógio no banco (pg_cron) chama o app a cada minuto; o banco devolve só os lembretes que venceram nos últimos 15 minutos e ainda não foram avisados (cada horário avisa uma vez). Lembrete único: na hora; sem hora: às 9h do dia; fixo: nos dias e horário escolhidos, no fuso da pessoa. Aparelho que deixou de existir é removido. No iPhone, só com o app instalado (iOS 16.4+).
+- **RN-44** **Excluir conta ou cartão:** sem lançamentos, exclui. Com lançamentos, a pessoa escolhe arquivar (some das telas, o histórico fica) ou excluir junto com os lançamentos (na conta: também transferências e contas fixas dela).
+
 ---
 
 ## 8. Estrutura do banco de dados (PostgreSQL / Supabase)
@@ -383,6 +391,17 @@ Próximos candidatos do levantamento: app instalável + notificações (tira PWA
 - **Segurança básica** para publicar: cabeçalhos contra embutir o app em outro site e contra adivinhar tipo de arquivo
 - **Ainda fora:** publicar (Vercel) e usar o Supabase de verdade; notificações push (lembretes, faturas, orçamento); abrir para outras pessoas (login do Google publicado, cadastro por convite ou livre, política de privacidade/LGPD)
 
+### Rodada 1 de melhorias (branch `feature/melhorias-rodada-1`)
+
+> Pedido do Caio depois da 1ª rodada de testes no celular (27/11/2026). Precisa da migration 7 (`20261128090000_lembretes_e_ajustes.sql`) e da configuração das notificações (chaves na Vercel + relógio no Supabase).
+
+- **Notificações no celular** para lembretes, e **lembretes fixos** (RN-40, RN-43)
+- **Registrar** entende afazeres sem valor (RN-42)
+- Contas e cartões: **Editar e Excluir** à vista (RN-44)
+- Cartão: **fatura atual e parcelas antigas** ao começar (RN-41)
+- Contas fixas: **primeira cobrança** (este mês ou o próximo), **"Paguei" com texto** no celular e na Visão geral, e **pago antes de começar** sem mexer no saldo (RN-39)
+- Celular com **mais espaço** entre os blocos
+
 ### Fase 3 — Objetivos pessoais
 - Metas não financeiras (marcos e prazos)
 - Dashboard de metas e integração dos planos com o orçamento (reservar o aporte mensal)
@@ -397,7 +416,7 @@ Próximos candidatos do levantamento: app instalável + notificações (tira PWA
 - Importação de extrato (CSV/OFX)
 
 ### Fora do MVP (parking lot)
-Open Finance, app nas lojas (Play Store/App Store) e uso offline completo, compartilhamento com outra pessoa (casal/família), multi-moeda, notificações push.
+Open Finance, app nas lojas (Play Store/App Store) e uso offline completo, compartilhamento com outra pessoa (casal/família), multi-moeda.
 
 ---
 

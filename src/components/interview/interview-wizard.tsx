@@ -15,7 +15,7 @@ import { useServerForm } from "@/lib/use-server-form";
 import { cn } from "@/lib/utils";
 import { completeInterviewAction } from "@/server/interview";
 
-type Fixed = { key: number; description: string; amount: string; day: string };
+type Fixed = { key: number; description: string; amount: string; day: string; paid: boolean };
 type StepId = "welcome" | "name" | "income" | "account" | "fixed" | "review";
 
 const SUGGESTIONS = [
@@ -50,6 +50,10 @@ export function InterviewWizard({
   const [name, setName] = useState(defaultName.split(" ")[0] ?? "");
   const [income, setIncome] = useState("");
   const [incomeDay, setIncomeDay] = useState("5");
+  const [incomePaid, setIncomePaid] = useState(true);
+  // o dia já passou (ou é hoje) neste mês? então pergunta se já foi pago/recebido
+  const todayDay = Number(today.slice(8, 10));
+  const passed = (day: string) => Number(day) >= 1 && Number(day) <= todayDay;
   const [accountName, setAccountName] = useState("Conta principal");
   const [balance, setBalance] = useState("");
   const [fixed, setFixed] = useState<Fixed[]>([]);
@@ -101,7 +105,7 @@ export function InterviewWizard({
   }
 
   function addFixed(description = "") {
-    setFixed((rows) => [...rows, { key: nextKey, description, amount: "", day: "10" }]);
+    setFixed((rows) => [...rows, { key: nextKey, description, amount: "", day: "10", paid: true }]);
     setNextKey((k) => k + 1);
   }
 
@@ -134,13 +138,14 @@ export function InterviewWizard({
       <input type="hidden" name="name" value={name} />
       <input type="hidden" name="income" value={income} />
       <input type="hidden" name="income_day" value={incomeDay} />
+      <input type="hidden" name="income_paid" value={String(passed(incomeDay) && incomePaid)} />
       {!hasAccounts && <input type="hidden" name="account_name" value={accountName} />}
       {!hasAccounts && <input type="hidden" name="balance" value={balance} />}
       <input
         type="hidden"
         name="fixed"
         value={JSON.stringify(
-          fixed.map(({ description, amount, day }) => ({ description, amount, day })),
+          fixed.map(({ description, amount, day, paid }) => ({ description, amount, day, paid: passed(day) && paid })),
         )}
       />
 
@@ -235,6 +240,20 @@ export function InterviewWizard({
               />
             </Field>
           </div>
+          {passed(incomeDay) && (
+            <label className="flex items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                checked={incomePaid}
+                onChange={(e) => setIncomePaid(e.target.checked)}
+                className="mt-0.5 size-4 accent-[var(--primary)]"
+              />
+              <span>
+                <strong>Já recebi o deste mês</strong>
+                <span className="block text-xs text-muted-foreground">O saldo que você vai informar já conta com ele.</span>
+              </span>
+            </label>
+          )}
         </div>
       )}
 
@@ -275,7 +294,8 @@ export function InterviewWizard({
           <h2 className="font-display text-4xl leading-tight tracking-tight">Quais contas se repetem todo mês?</h2>
           <p className="text-sm text-muted-foreground">
             Aluguel, água, luz, parcelas, mercado… Toque nas sugestões ou
-            adicione as suas. Você pode ajustar tudo depois em “Meu mês”.
+            adicione as suas. Se o vencimento já passou neste mês, marque se já pagou:
+            assim ela não aparece como atrasada nem desconta de novo do seu saldo.
           </p>
 
           <div className="flex flex-wrap gap-2">
@@ -327,6 +347,17 @@ export function InterviewWizard({
                   >
                     <Trash2Icon />
                   </Button>
+                  {passed(row.day) && (
+                    <label className="col-span-4 -mt-0.5 flex items-center gap-2 pl-1 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={row.paid}
+                        onChange={(e) => update(row.key, { paid: e.target.checked })}
+                        className="size-4 accent-[var(--primary)]"
+                      />
+                      Já paguei a deste mês (venceu dia {row.day})
+                    </label>
+                  )}
                 </li>
               ))}
               <li className="grid grid-cols-[1fr_6.5rem_3.5rem_auto] gap-2 text-xs text-muted-foreground" aria-hidden>

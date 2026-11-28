@@ -19,6 +19,7 @@ import { HabitRow } from "@/components/routine/habit-row";
 import { NoteCard, type NoteRow } from "@/components/routine/note-card";
 import { NoteDialog } from "@/components/routine/note-dialog";
 import { InstallHint } from "@/components/shell/install-hint";
+import { PushToggle } from "@/components/routine/push-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { Count } from "@/components/viz/count";
 import { formatLongDate, greetingForHour, hourInSaoPaulo } from "@/lib/dates";
@@ -112,6 +113,8 @@ export default async function InicioPage() {
 
       {/* Só no celular e fora do app instalado */}
       <InstallHint />
+      {/* convite para ativar as notificações (some quando já estão ativas) */}
+      <PushToggle compact />
 
       {/* Atalhos */}
       <ul className="stagger grid grid-cols-1 gap-2.5 sm:grid-cols-3">

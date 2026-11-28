@@ -90,3 +90,29 @@ export async function archiveAccountAction(formData: FormData): Promise<void> {
     .eq("id", id);
   revalidatePath("/", "layout");
 }
+
+/**
+ * Excluir uma conta. mode="archive": só arquiva (o histórico fica).
+ * mode="delete": apaga a conta e tudo lançado nela (lançamentos, transferências,
+ * contas fixas e as pendentes delas); cartões que pagavam por ela ficam sem conta.
+ */
+export async function deleteAccountAction(formData: FormData): Promise<void> {
+  const id = formString(formData, "id");
+  if (!id) return;
+  const db = await createClient();
+  const now = new Date().toISOString();
+  if (formString(formData, "mode") !== "delete") {
+    await db.from("accounts").update({ archived_at: now }).eq("id", id);
+    revalidatePath("/", "layout");
+    return;
+  }
+  await db
+    .from("transactions")
+    .update({ deleted_at: now })
+    .or(`account_id.eq.${id},transfer_account_id.eq.${id}`)
+    .is("deleted_at", null);
+  await db.from("recurrences").update({ deleted_at: now }).eq("account_id", id).is("deleted_at", null);
+  await db.from("credit_cards").update({ default_account_id: null }).eq("default_account_id", id);
+  await db.from("accounts").update({ deleted_at: now }).eq("id", id);
+  revalidatePath("/", "layout");
+}

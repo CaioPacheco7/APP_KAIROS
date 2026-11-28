@@ -1,5 +1,4 @@
 import {
-  ArchiveIcon,
   LandmarkIcon,
   PiggyBankIcon,
   TrendingUpIcon,
@@ -15,11 +14,12 @@ import { MoneyText } from "@/components/app/money";
 import { PageHeader } from "@/components/app/page-header";
 import { Panel } from "@/components/app/panel";
 import { Hourglass } from "@/components/brand/hourglass";
-import { ConfirmButton } from "@/components/confirm-button";
 import { Count } from "@/components/viz/count";
 import { formatBRL } from "@/lib/money";
 import { accountColor, splitShares } from "@/lib/viz";
-import { archiveAccountAction } from "@/server/accounts";
+import { DeleteOrArchive } from "@/components/app/delete-or-archive";
+import { createClient } from "@/lib/supabase/server";
+import { deleteAccountAction } from "@/server/accounts";
 import { getMonthSnapshot, getReserve } from "@/server/health";
 import { getAccounts, getBalances, getFormOptions } from "@/server/queries";
 import { ACCOUNT_TYPE_LABEL, type AccountType } from "@/types/database";
@@ -40,6 +40,19 @@ export default async function ContasPage() {
   const [accounts, balances, { today }] = await Promise.all([getAccounts(), getBalances(), getFormOptions()]);
 
   const rows = accounts.map((a, i) => ({ ...a, balance: balances.get(a.id) ?? 0, color: accountColor(i) }));
+  const db = await createClient();
+  const movements = new Map(
+    await Promise.all(
+      accounts.map(async (a) => {
+        const { count } = await db
+          .from("transactions")
+          .select("id", { count: "exact", head: true })
+          .is("deleted_at", null)
+          .or(`account_id.eq.${a.id},transfer_account_id.eq.${a.id}`);
+        return [a.id, count ?? 0] as const;
+      }),
+    ),
+  );
   const total = rows.reduce((sum, r) => sum + r.balance, 0);
   const month = today.slice(0, 7);
   const reserve =
@@ -117,21 +130,6 @@ export default async function ContasPage() {
                           <p className="text-xs text-muted-foreground">{ACCOUNT_TYPE_LABEL[account.type]}</p>
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center">
-                        <AccountDialog account={account} />
-                        <form action={archiveAccountAction}>
-                          <input type="hidden" name="id" value={account.id} />
-                          <ConfirmButton
-                            message={`Arquivar "${account.name}"? Ela some das telas, mas o histórico de transações é mantido.`}
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground max-sm:px-2"
-                          >
-                            <ArchiveIcon className="sm:hidden" aria-hidden />
-                            <span className="max-sm:sr-only">Arquivar</span>
-                          </ConfirmButton>
-                        </form>
-                      </div>
                     </div>
                     <div className="mt-auto">
                       <p className="text-[clamp(1.9rem,3.2vw,2.6rem)] leading-none font-extrabold tracking-[-0.06em]">
@@ -144,6 +142,16 @@ export default async function ContasPage() {
                             ? <MoneyText>{`Negativa em ${formatBRL(Math.abs(account.balance))}`}</MoneyText>
                             : "Sem saldo"}
                       </p>
+                    </div>
+                    <div className="-mx-1 -mb-1 flex flex-wrap items-center gap-1 border-t border-line pt-2">
+                      <AccountDialog account={account} />
+                      <DeleteOrArchive
+                        id={account.id}
+                        name={account.name}
+                        noun="conta"
+                        movements={movements.get(account.id) ?? 0}
+                        action={deleteAccountAction}
+                      />
                     </div>
                   </article>
                 </li>

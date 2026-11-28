@@ -186,6 +186,12 @@ O KAIROS é pensado para o celular primeiro (vai ser usado como aplicativo, inst
 - **Sem internet:** `experimental.useOffline` + `components/shell/offline-banner.tsx`: aviso no topo e o Next repete
   sozinho a navegação e os registros quando a conexão volta.
 
+- **Respiro no celular:** abaixo de 640 px, dentro do palco, `gap-3` vira 16 px, `gap-4` 20 px e `gap-5` 24 px (regra em
+  `globals.css`); painéis e linhas de lista ficam um pouco mais altos. No computador nada muda.
+- **Notificações:** `public/sw.js` (mostra o aviso e abre o app no lugar certo), `components/routine/push-toggle.tsx`
+  (ativar/desativar/testar por aparelho, com o texto de cada situação: bloqueado, sem suporte, iPhone sem instalar) e
+  o ícone da barra de status `public/icons/badge-96.png` (silhueta branca).
+
 Conferir no celular: `shots/mobile-audit.mjs` (scratchpad) mede alvos de toque, textos, zoom e rolagem em todas as telas.
 
 ## Padrões de página
