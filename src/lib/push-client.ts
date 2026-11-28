@@ -3,6 +3,8 @@
  * para descobrir o estado, ativar e desativar.
  */
 
+import { toFailure, type PushFailure } from "./push-errors";
+
 export type PushState =
   | "checking"
   /** este navegador não recebe notificações */
@@ -35,13 +37,44 @@ function isStandalone(): boolean {
   return matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }
 
+/** O Brave deixa o push do Google desligado por padrão. */
+export function isBrave(): boolean {
+  return typeof (navigator as Navigator & { brave?: { isBrave?: unknown } }).brave?.isBrave === "function";
+}
+
+async function registerWorker(): Promise<ServiceWorkerRegistration> {
+  return (await navigator.serviceWorker.getRegistration("/")) ?? (await navigator.serviceWorker.register("/sw.js", { scope: "/" }));
+}
+
 export async function registration(): Promise<ServiceWorkerRegistration | null> {
   if (!("serviceWorker" in navigator)) return null;
   try {
-    return (await navigator.serviceWorker.getRegistration("/")) ?? (await navigator.serviceWorker.register("/sw.js", { scope: "/" }));
+    return await registerWorker();
   } catch {
     return null;
   }
+}
+
+const WAIT_MS = 20_000;
+
+/** Não deixa o botão preso em “Ativando…” se o navegador nunca responder. */
+function within<T>(promise: Promise<T>, ms = WAIT_MS): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(Object.assign(new Error(`sem resposta em ${ms / 1000} s`), { name: "TimeoutError" })),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
 }
 
 export async function currentPushState(): Promise<{ state: PushState; subscription: PushSubscription | null }> {
@@ -55,12 +88,50 @@ export async function currentPushState(): Promise<{ state: PushState; subscripti
   return { state: subscription && Notification.permission === "granted" ? "on" : "off", subscription };
 }
 
-/** Pede a permissão e inscreve este aparelho. */
-export async function subscribeThisDevice(): Promise<PushSubscription | "denied" | null> {
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") return permission === "denied" ? "denied" : null;
-  const reg = await registration();
-  if (!reg) return null;
-  await navigator.serviceWorker.ready;
-  return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) });
+export type SubscribeResult =
+  | { status: "ok"; subscription: PushSubscription }
+  /** bloqueou de vez */
+  | { status: "denied" }
+  /** fechou o pedido sem responder */
+  | { status: "dismissed" }
+  | { status: "failed"; failure: PushFailure };
+
+/**
+ * Pede a permissão e inscreve este aparelho. Nunca lança: diz em que etapa
+ * falhou e com qual erro do navegador, para o cartão explicar.
+ */
+export async function subscribeThisDevice(): Promise<SubscribeResult> {
+  let permission: NotificationPermission;
+  try {
+    permission = await Notification.requestPermission();
+  } catch (err) {
+    return { status: "failed", failure: toFailure("permission", err) };
+  }
+  if (permission === "denied") return { status: "denied" };
+  if (permission !== "granted") return { status: "dismissed" };
+
+  let reg: ServiceWorkerRegistration;
+  try {
+    await registerWorker();
+    reg = await within(navigator.serviceWorker.ready);
+  } catch (err) {
+    return { status: "failed", failure: toFailure("worker", err) };
+  }
+
+  const subscribe = () =>
+    within(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) }));
+  try {
+    return { status: "ok", subscription: await subscribe() };
+  } catch (err) {
+    if (toFailure("subscribe", err).name !== "InvalidStateError") {
+      return { status: "failed", failure: toFailure("subscribe", err) };
+    }
+    // inscrição antiga presa (outra chave): apaga e tenta uma vez
+    try {
+      await (await reg.pushManager.getSubscription())?.unsubscribe();
+      return { status: "ok", subscription: await subscribe() };
+    } catch (retryErr) {
+      return { status: "failed", failure: toFailure("subscribe", retryErr) };
+    }
+  }
 }
