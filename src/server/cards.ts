@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isISODate, todayISO } from "@/lib/dates";
+import { openingPlan, type CardCycle } from "@/lib/finance/cards";
 import { parseMoneyToCents } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { requireUserId } from "@/lib/supabase/user";
@@ -22,6 +23,58 @@ const cardSchema = z.object({
   due_day: day,
   default_account_id: z.string().optional(),
 });
+
+type Db = Awaited<ReturnType<typeof createClient>>;
+
+/** Lê os campos de saldo anterior: "opening_current", "opening_per_month", "opening_months". */
+function readOpening(formData: FormData):
+  | { ok: true; current: number; perMonth: number; months: number }
+  | { ok: false; field: string; message: string } {
+  const money = (name: string) => {
+    const raw = formString(formData, name).trim();
+    return raw ? parseMoneyToCents(raw) : 0;
+  };
+  const current = money("opening_current");
+  if (current === null || current < 0) return { ok: false, field: "opening_current", message: "Valor inválido. Ex.: 1200,00" };
+  const perMonth = money("opening_per_month");
+  if (perMonth === null || perMonth < 0) return { ok: false, field: "opening_per_month", message: "Valor inválido. Ex.: 200,00" };
+  const monthsRaw = formString(formData, "opening_months").trim();
+  const months = monthsRaw ? Number(monthsRaw) : 0;
+  if (!Number.isInteger(months) || months < 0 || months > 47) return { ok: false, field: "opening_months", message: "De 0 a 47 meses" };
+  if (perMonth > 0 && months === 0) return { ok: false, field: "opening_months", message: "Em quantas faturas ainda vem a parcela?" };
+  return { ok: true, current, perMonth, months };
+}
+
+/** Grava o saldo de antes de começar como compras "antes de começar" (RN-41). */
+async function insertOpening(
+  db: Db,
+  userId: string,
+  cardId: string,
+  cycle: CardCycle,
+  opening: { current: number; perMonth: number; months: number },
+): Promise<boolean> {
+  const plan = openingPlan({ cycle, today: todayISO(), ...opening });
+  if (plan.length === 0) return true;
+  const group = plan.some((p) => p.number !== null) ? crypto.randomUUID() : null;
+  const rows = plan.map((p) => ({
+    user_id: userId,
+    type: "expense" as const,
+    amount: p.amount,
+    date: p.date,
+    status: "settled" as const,
+    description: p.number === null && p.invoiceMonth === plan[0].invoiceMonth && opening.current > 0 ? "Fatura antes do KAIROS" : "Parcelas antes do KAIROS",
+    account_id: null,
+    category_id: null,
+    card_id: cardId,
+    invoice_month: `${p.invoiceMonth}-01`,
+    before_start: true,
+    installment_group_id: p.number !== null ? group : null,
+    installment_number: p.number,
+    installment_total: p.total,
+  }));
+  const { error } = await db.from("transactions").insert(rows);
+  return !error;
+}
 
 /** Cria (sem `id`) ou edita (com `id`) um cartão. */
 export async function saveCardAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -48,6 +101,9 @@ export async function saveCardAction(_prev: ActionState, formData: FormData): Pr
     };
   }
 
+  const opening = readOpening(formData);
+  if (!opening.ok) return { status: "error", message: "Confira os campos.", fieldErrors: { [opening.field]: opening.message } };
+
   const fields = {
     name: parsed.data.name,
     credit_limit,
@@ -62,8 +118,10 @@ export async function saveCardAction(_prev: ActionState, formData: FormData): Pr
     if (error || !data?.length) return { status: "error", message: "Não foi possível salvar o cartão." };
   } else {
     const userId = await requireUserId();
-    const { error } = await db.from("credit_cards").insert({ ...fields, user_id: userId });
-    if (error) return { status: "error", message: "Não foi possível criar o cartão." };
+    const { data, error } = await db.from("credit_cards").insert({ ...fields, user_id: userId }).select("id").single();
+    if (error || !data) return { status: "error", message: "Não foi possível criar o cartão." };
+    const saved = await insertOpening(db, userId, (data as { id: string }).id, { closingDay: fields.closing_day, dueDay: fields.due_day }, opening);
+    if (!saved) return { status: "error", message: "O cartão foi criado, mas não consegui gravar a fatura atual. Use “Informar fatura atual”." };
   }
   revalidatePath("/", "layout");
   return { status: "success" };
@@ -141,4 +199,47 @@ export async function payInvoiceAction(_prev: ActionState, formData: FormData): 
 
   revalidatePath("/", "layout");
   return { status: "success", message: "Pagamento registrado" };
+}
+
+/**
+ * Excluir um cartão. mode="archive": só arquiva. mode="delete": apaga o
+ * cartão com as compras e os pagamentos de fatura dele.
+ */
+export async function deleteCardAction(formData: FormData): Promise<void> {
+  const id = formString(formData, "id");
+  if (!id) return;
+  const db = await createClient();
+  const now = new Date().toISOString();
+  if (formString(formData, "mode") !== "delete") {
+    await db.from("credit_cards").update({ archived_at: now }).eq("id", id);
+    revalidatePath("/", "layout");
+    return;
+  }
+  await db.from("transactions").update({ deleted_at: now }).eq("card_id", id).is("deleted_at", null);
+  await db.from("credit_cards").update({ deleted_at: now }).eq("id", id);
+  revalidatePath("/", "layout");
+}
+
+/** "Informar fatura atual": saldo de antes de começar num cartão que já existe (RN-41). */
+export async function addOpeningBalanceAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const cardId = formString(formData, "card_id");
+  const opening = readOpening(formData);
+  if (!opening.ok) return { status: "error", message: "Confira os campos.", fieldErrors: { [opening.field]: opening.message } };
+  if (opening.current === 0 && opening.perMonth === 0) {
+    return { status: "error", message: "Confira os campos.", fieldErrors: { opening_current: "Informe o valor da fatura ou das parcelas" } };
+  }
+  const db = await createClient();
+  const { data: card } = await db
+    .from("credit_cards")
+    .select("id, closing_day, due_day")
+    .eq("id", cardId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!card) return { status: "error", message: "Cartão não encontrado." };
+  const c = card as { closing_day: number; due_day: number };
+  const userId = await requireUserId();
+  const saved = await insertOpening(db, userId, cardId, { closingDay: Number(c.closing_day), dueDay: Number(c.due_day) }, opening);
+  if (!saved) return { status: "error", message: "Não consegui gravar. Tente de novo." };
+  revalidatePath("/", "layout");
+  return { status: "success", message: "Fatura atual informada" };
 }

@@ -14,6 +14,8 @@ const fixedItem = z.object({
   description: z.string().trim().min(1, "Dê um nome à conta").max(60),
   amount: z.string().trim().min(1, "Informe o valor"),
   day: z.coerce.number().int().min(1, "Dia de 1 a 31").max(31, "Dia de 1 a 31"),
+  /** já pago neste mês, antes de começar a usar o app (RN-39) */
+  paid: z.boolean().optional(),
 });
 
 const schema = z.object({
@@ -78,7 +80,7 @@ export async function completeInterviewAction(
     };
   }
 
-  const fixed: Array<{ description: string; amount: number; day: number; category: string | null }> = [];
+  const fixed: Array<{ description: string; amount: number; day: number; category: string | null; paid: boolean }> = [];
   for (const item of fixedParsed.data) {
     const amount = parseMoneyToCents(item.amount);
     if (amount === null || amount <= 0) {
@@ -92,6 +94,7 @@ export async function completeInterviewAction(
       amount,
       day: item.day,
       category: categoryHintFor(item.description, "expense"),
+      paid: item.paid === true,
     });
   }
 
@@ -104,6 +107,7 @@ export async function completeInterviewAction(
     p_balance: balance,
     p_fixed: fixed,
     p_month: `${todayISO().slice(0, 7)}-01`,
+    p_income_paid: formString(formData, "income_paid") === "true",
   });
 
   if (error) {

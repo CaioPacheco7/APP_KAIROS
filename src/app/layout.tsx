@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/app/theme-provider";
 import { OfflineBanner } from "@/components/shell/offline-banner";
+import { ServiceWorkerRegister } from "@/components/shell/sw-register";
 import { Toaster } from "@/components/ui/sonner";
 import { privacyBootScript } from "@/lib/privacy";
 import "./globals.css";
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
           <OfflineBanner />
+          <ServiceWorkerRegister />
           {children}
           {/* no celular, os avisos ficam acima da doca fixa */}
           <Toaster position="bottom-right" mobileOffset={{ bottom: 92 }} />

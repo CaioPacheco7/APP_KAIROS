@@ -17,8 +17,8 @@ export function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("glass-panel min-w-0 rounded-[20px] px-4 py-[15px]", className)}>
-      <header className={cn("mb-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2", headerClassName)}>
+    <section className={cn("glass-panel min-w-0 rounded-[20px] px-4 py-[18px] sm:py-[15px]", className)}>
+      <header className={cn("mb-4 flex flex-wrap items-start justify-between gap-x-3 gap-y-2 sm:mb-3", headerClassName)}>
         <div className="min-w-0">
           <h2 className="text-[0.9375rem] leading-snug font-bold tracking-[-0.024em]">{title}</h2>
           {subtitle && <p className="mt-0.5 text-[0.6875rem] text-muted-foreground">{subtitle}</p>}

@@ -108,15 +108,20 @@ export async function removeRecurrenceAction(formData: FormData): Promise<void> 
   refresh();
 }
 
-/** "Paguei" / "Recebi" e o desfazer: alterna pendente <-> efetivada. */
+/**
+ * "Paguei" / "Recebi" e o desfazer: alterna pendente <-> efetivada.
+ * before_start="true": foi pago/recebido antes de começar a usar o app (RN-39),
+ * então não mexe no saldo informado na entrevista.
+ */
 export async function setPaidAction(formData: FormData): Promise<void> {
   const id = formString(formData, "id");
   const paid = formString(formData, "paid") === "true";
+  const beforeStart = paid && formString(formData, "before_start") === "true";
   if (!id) return;
   const db = await createClient();
   await db
     .from("transactions")
-    .update({ status: paid ? "settled" : "pending" })
+    .update({ status: paid ? "settled" : "pending", before_start: beforeStart })
     .eq("id", id)
     .is("deleted_at", null);
   refresh();

@@ -8,11 +8,17 @@
  *   "uber 23,90 ontem"                           -> despesa 23,90 (Transporte)
  *   "tarefa: renovar CNH até 20/12"              -> tarefa com prazo
  *   "lembrar de pagar a luz amanhã 9h"           -> lembrete
+ *   "beber 2,5 L de água todo dia às 10h"        -> lembrete fixo (todo dia, 10:00)
+ *   "preciso criar uma conta PJ"                 -> tarefa (sem valor em dinheiro = afazer)
  *   "anotar: ideia de presente para a Ana"       -> nota
  */
 
 import { addDays, isISODate } from "@/lib/dates";
 import { parseMoneyToCents } from "@/lib/money";
+import { extractRepeat } from "@/lib/reminders";
+
+/** Horário de um lembrete fixo quando a pessoa não diz qual. */
+export const DEFAULT_REMINDER_TIME = "09:00";
 
 export type Intent =
   | {
@@ -24,7 +30,14 @@ export type Intent =
       categoryHint: string | null;
     }
   | { kind: "task"; title: string; dueDate: string | null }
-  | { kind: "reminder"; title: string; date: string; time: string | null }
+  | {
+      kind: "reminder";
+      title: string;
+      date: string;
+      time: string | null;
+      /** lembrete fixo: dias da semana (1 = segunda ... 7 = domingo) */
+      repeat?: number[];
+    }
   | { kind: "note"; text: string }
   | { kind: "unknown"; message: string };
 
@@ -251,8 +264,57 @@ function tidy(text: string): string {
 
 const HELP =
   "Não entendi. Tente: “gastei R$ 50 na padaria”, “recebi 3000 de salário”, " +
-  "“tarefa: renovar CNH até 20/12”, “lembrar de pagar a luz amanhã 9h” ou " +
-  "“anotar: ideia de presente”.";
+  "“preciso renovar a CNH até 20/12”, “lembrar de pagar a luz amanhã 9h”, " +
+  "“beber água todo dia às 10h” ou “anotar: ideia de presente”.";
+
+// ---------------------------------------------------------------------
+// Afazeres sem valor em dinheiro: tarefa, lembrete ou lembrete fixo
+// ---------------------------------------------------------------------
+
+/** "preciso", "tenho que", "não esquecer de"... no começo = é um afazer. */
+const INTENT_START =
+  /^(?:eu\s+)?(?:preciso|precisava|precisaria|tenho que|tenho de|tinha que|vou ter que|devo|nao posso esquecer|nao esquecer|falta|faltou)\b(?:\s+(?:de|que))?/;
+
+/** Verbos de afazer comuns (no infinitivo, sem acento). */
+const TODO_VERBS = new Set([
+  "abrir", "agendar", "alimentar", "arrumar", "assinar", "beber", "buscar", "cancelar", "checar", "comprar",
+  "comparecer", "conferir", "consertar", "conversar", "correr", "cozinhar", "criar", "dar", "declarar",
+  "depositar", "devolver", "enviar", "entregar", "estudar", "fazer", "fechar", "falar", "imprimir", "ir",
+  "lavar", "ler", "levar", "ligar", "limpar", "mandar", "marcar", "matricular", "organizar", "pagar",
+  "passear", "pedir", "pegar", "preparar", "regar", "renovar", "reservar", "resolver", "responder",
+  "revisar", "sacar", "solicitar", "tirar", "tomar", "transferir", "treinar", "trocar", "ver", "verificar", "visitar",
+]);
+
+const HAS_CURRENCY = /R\$|\b(?:reais|real|contos?|pilas?)\b/i;
+
+/** O texto parece um afazer (e não um gasto)? */
+function looksLikeTodo(text: string): boolean {
+  if (HAS_CURRENCY.test(text)) return false;
+  const n = norm(text).trim();
+  if (INTENT_START.test(n)) return true;
+  const first = n.replace(/^eu\s+/, "").split(/\s+/)[0] ?? "";
+  if (TODO_VERBS.has(first)) return true;
+  return extractRepeat(text).days !== null;
+}
+
+/** Tira "preciso", "tenho que"... do começo do título. */
+function stripIntent(text: string): string {
+  const n = norm(text);
+  const m = n.match(INTENT_START);
+  return m ? text.slice(m[0].length) : text;
+}
+
+/** Afazer: com repetição vira lembrete fixo; com hora, lembrete; senão, tarefa. */
+function todoIntent(text: string, today: string, { forceReminder = false } = {}): Intent | null {
+  const { days, rest: noRepeat } = extractRepeat(text);
+  const { date, rest: noDate } = extractDate(noRepeat, today, { future: true });
+  const { time, rest } = extractTime(noDate);
+  const title = tidy(stripIntent(rest));
+  if (!title) return null;
+  if (days) return { kind: "reminder", title, date: today, time: time ?? DEFAULT_REMINDER_TIME, repeat: days };
+  if (time || forceReminder) return { kind: "reminder", title, date: date ?? today, time };
+  return { kind: "task", title, dueDate: date };
+}
 
 export function parseCapture(input: string, today: string): Intent {
   const text = input.trim();
@@ -269,6 +331,9 @@ export function parseCapture(input: string, today: string): Intent {
 
   m = text.match(/^(?:tarefa|todo|fazer)\b\s*[:\-–]?\s*(.*)$/is);
   if (m) {
+    const { days } = extractRepeat(m[1]);
+    // "tarefa: beber água todo dia 10h" -> lembrete fixo; senão, tarefa com prazo
+    if (days) return todoIntent(m[1], today) ?? { kind: "unknown", message: "Qual é a tarefa? Ex.: “tarefa: renovar CNH até 20/12”." };
     const { date, rest } = extractDate(m[1], today, { future: true });
     const title = tidy(rest);
     return title
@@ -278,13 +343,18 @@ export function parseCapture(input: string, today: string): Intent {
 
   m = text.match(/^(?:lembrar|lembrete|me\s+lembra(?:r)?|lembra)\b\s*(?:de|que)?\s*[:\-–]?\s*(.*)$/is);
   if (m) {
-    const { date, rest: noDate } = extractDate(m[1], today, { future: true });
-    const { time, rest } = extractTime(noDate);
-    const title = tidy(rest);
-    if (!title) {
-      return { kind: "unknown", message: "Do que devo lembrar? Ex.: “lembrar de pagar a luz amanhã 9h”." };
-    }
-    return { kind: "reminder", title, date: date ?? today, time };
+    return (
+      todoIntent(m[1], today, { forceReminder: true }) ?? {
+        kind: "unknown",
+        message: "Do que devo lembrar? Ex.: “lembrar de pagar a luz amanhã 9h”.",
+      }
+    );
+  }
+
+  // Afazer sem valor em dinheiro ("preciso criar uma conta PJ", "ligar pro banco amanhã 10h")
+  if (looksLikeTodo(text)) {
+    const todo = todoIntent(text, today);
+    if (todo) return todo;
   }
 
   // Financeiro
@@ -296,7 +366,7 @@ export function parseCapture(input: string, today: string): Intent {
   if (amount === null) {
     return {
       kind: "unknown",
-      message: "Não achei um valor. " + HELP,
+      message: "Não achei um valor nem um afazer. " + HELP,
     };
   }
   if (amount <= 0) {

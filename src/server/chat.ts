@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { parseCapture, type Intent } from "@/lib/capture/parse";
+import { DEFAULT_REMINDER_TIME, parseCapture, type Intent } from "@/lib/capture/parse";
+import { repeatLabel } from "@/lib/reminders";
 import { formatDayMonth, todayISO } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
@@ -100,13 +101,35 @@ async function execute(
       if (error || !data) return { content: "Não consegui criar a tarefa." };
       return {
         content: `Tarefa criada: ${intent.title}${
-          intent.dueDate ? ` · prazo ${formatDayMonth(intent.dueDate)}` : ""
-        }`,
+          intent.dueDate ? ` · prazo ${formatDayMonth(intent.dueDate)}` : " · sem prazo"
+        }. Se quiser um aviso no celular, escreva “lembrar de … amanhã 9h”.`,
         entity: { type: "task", id: data.id as string },
       };
     }
 
     case "reminder": {
+      // Lembrete fixo: repete nos dias escolhidos, no horário (sem data)
+      if (intent.repeat) {
+        const time = intent.time ?? DEFAULT_REMINDER_TIME;
+        const { data, error } = await db
+          .from("tasks")
+          .insert({
+            user_id: userId,
+            kind: "reminder",
+            title: intent.title,
+            repeat_weekdays: intent.repeat,
+            remind_time: time,
+          })
+          .select("id")
+          .single();
+        if (error || !data) return { content: "Não consegui criar o lembrete fixo." };
+        return {
+          content: `Lembrete fixo criado: ${intent.title} · ${repeatLabel(intent.repeat, time)}${
+            intent.time ? "" : " (mude o horário em Rotina → Lembretes)"
+          }. Ative as notificações em Rotina → Lembretes para o celular avisar.`,
+          entity: { type: "task", id: data.id as string },
+        };
+      }
       // Brasil não tem horário de verão desde 2019: UTC-3 fixo.
       const remindAt = intent.time
         ? `${intent.date}T${intent.time}:00-03:00`

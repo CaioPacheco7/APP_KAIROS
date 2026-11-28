@@ -5,7 +5,6 @@ import {
   CheckIcon,
   PiggyBankIcon,
   ReceiptTextIcon,
-  RotateCcwIcon,
 } from "lucide-react";
 import { connection } from "next/server";
 import { EmptyState } from "@/components/app/empty-state";
@@ -19,7 +18,6 @@ import { BudgetCard } from "@/components/budget/budget-card";
 import { getBudgetOverview } from "@/server/budget-data";
 import { Metric } from "@/components/viz/metric";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -28,15 +26,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatDayMonth, monthBounds, parseMonth } from "@/lib/dates";
+import { formatDayMonth, monthBounds, parseMonth, todayISO } from "@/lib/dates";
 import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { summarizeSubscriptions } from "@/lib/finance/subscriptions";
 import { getMonthSnapshot } from "@/server/health";
-import { getCategoryNames, getFormOptions, getRecurrences } from "@/server/queries";
-import { removeRecurrenceAction, setPaidAction } from "@/server/recurrences";
+import { getCategoryNames, getFormOptions, getProfile, getRecurrences } from "@/server/queries";
+import { PaidButton } from "@/components/recurrences/paid-button";
+import { removeRecurrenceAction } from "@/server/recurrences";
 
 export const metadata = { title: "Meu mês · KAIROS" };
 
@@ -47,6 +46,7 @@ type Instance = {
   date: string;
   status: "pending" | "settled";
   description: string | null;
+  before_start: boolean;
 };
 
 export default async function MesPage({
@@ -64,10 +64,12 @@ export default async function MesPage({
 
   const { start, end } = monthBounds(month);
   const db = await createClient();
+  const profile = await getProfile();
+  const startedOn = profile?.onboarded_at ? todayISO(new Date(profile.onboarded_at)) : null;
   const [{ data }, recurrences, categoryNames, budget] = await Promise.all([
     db
       .from("transactions")
-      .select("id, type, amount, date, status, description")
+      .select("id, type, amount, date, status, description, before_start")
       .is("deleted_at", null)
       .not("recurrence_id", "is", null)
       .gte("date", start)
@@ -131,7 +133,7 @@ export default async function MesPage({
             ) : (
               <ul className="divide-y divide-border">
                 {incomes.map((i) => (
-                  <InstanceRow key={i.id} item={i} today={today} />
+                  <InstanceRow key={i.id} item={i} today={today} startedOn={startedOn} />
                 ))}
               </ul>
             )}
@@ -153,7 +155,7 @@ export default async function MesPage({
             ) : (
               <ul className="divide-y divide-border">
                 {bills.map((b) => (
-                  <InstanceRow key={b.id} item={b} today={today} />
+                  <InstanceRow key={b.id} item={b} today={today} startedOn={startedOn} />
                 ))}
               </ul>
             )}
@@ -199,7 +201,7 @@ export default async function MesPage({
                     </span>
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[0.9375rem] font-medium">
+                    <p className="truncate text-[0.9375rem] leading-snug font-medium max-sm:line-clamp-2 max-sm:whitespace-normal max-sm:break-words">
                       {r.description}
                       {r.kind === "income" && (
                         <Badge variant="gold" className="ml-2 align-middle">
@@ -237,17 +239,18 @@ export default async function MesPage({
   );
 }
 
-function InstanceRow({ item, today }: { item: Instance; today: string }) {
+function InstanceRow({ item, today, startedOn }: { item: Instance; today: string; startedOn: string | null }) {
   const settled = item.status === "settled";
   const overdue = !settled && item.date < today;
   const isIncome = item.type === "income";
   const day = item.date.slice(8, 10);
 
   return (
-    <li className="flex items-center gap-2.5 py-3 sm:gap-3.5">
+    // celular: o botão vai para uma segunda linha (mais espaço para o nome e o valor)
+    <li className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-3.5 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:gap-x-3.5">
       <span
         className={cn(
-          "grid size-10 shrink-0 place-items-center rounded-[12px] text-center leading-none sm:size-11",
+          "grid size-11 shrink-0 place-items-center rounded-[12px] text-center leading-none",
           settled ? "bg-gold-soft text-gold" : overdue ? "bg-destructive/10 text-destructive" : "glass-inner",
         )}
       >
@@ -261,46 +264,32 @@ function InstanceRow({ item, today }: { item: Instance; today: string }) {
         )}
       </span>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0">
         <p className={cn("truncate text-[0.9375rem] font-medium", settled && "text-muted-foreground line-through")}>
           {item.description ?? (isIncome ? "Entrada" : "Conta")}
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {overdue ? (
             <span className="font-medium text-destructive">Atrasada · venceu {formatDayMonth(item.date)}</span>
           ) : settled ? (
-            `${isIncome ? "Recebida" : "Paga"} · ${formatDayMonth(item.date)}`
+            `${isIncome ? "Recebida" : "Paga"} · ${formatDayMonth(item.date)}${item.before_start ? " · antes de começar" : ""}`
           ) : (
             `${isIncome ? "Previsto" : "Vence"} ${formatDayMonth(item.date)}`
           )}
         </p>
       </div>
 
-      <p className={cn("shrink-0 text-[0.875rem] font-bold tabular-nums sm:text-[0.9375rem]", isIncome && !settled && "text-money-in")}>
+      <p className={cn("text-[0.9375rem] font-bold tabular-nums", isIncome && !settled && "text-money-in")}>
         <Money>{formatBRL(item.amount)}</Money>
       </p>
 
-      {/* no celular o botão vira só ícone (o nome continua para leitores de tela) */}
-      <form action={setPaidAction} className="shrink-0">
-        <input type="hidden" name="id" value={item.id} />
-        <input type="hidden" name="paid" value={String(!settled)} />
-        <Button
-          type="submit"
-          variant={settled ? "ghost" : "outline"}
-          size="sm"
-          className={cn("max-sm:px-2.5", settled && "text-muted-foreground")}
-        >
-          {settled ? (
-            <>
-              <RotateCcwIcon aria-hidden /> <span className="max-sm:sr-only">Desfazer</span>
-            </>
-          ) : (
-            <>
-              <CheckIcon aria-hidden /> <span className="max-sm:sr-only">{isIncome ? "Recebi" : "Paguei"}</span>
-            </>
-          )}
-        </Button>
-      </form>
+      <PaidButton
+        id={item.id}
+        settled={settled}
+        income={isIncome}
+        askBeforeStart={startedOn !== null && item.date < startedOn}
+        className="col-span-2 col-start-2 justify-self-end sm:col-span-1 sm:col-start-auto"
+      />
     </li>
   );
 }

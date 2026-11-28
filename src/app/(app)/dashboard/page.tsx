@@ -33,6 +33,7 @@ import {
   monthShort,
   parseMonth,
   shiftMonth,
+  todayISO,
 } from "@/lib/dates";
 import { Money } from "@/components/app/money";
 import { formatBRL } from "@/lib/money";
@@ -40,6 +41,7 @@ import { dueState } from "@/lib/notices";
 import { createClient } from "@/lib/supabase/server";
 import { capitalize, cn } from "@/lib/utils";
 import { pctChange } from "@/lib/viz";
+import { PaidButton } from "@/components/recurrences/paid-button";
 import { getBudgetOverview } from "@/server/budget-data";
 import { getCardNames, getCardSummaries } from "@/server/card-data";
 import { getMonthSnapshot } from "@/server/health";
@@ -48,6 +50,7 @@ import {
   getBalances,
   getCategoryNames,
   getFormOptions,
+  getProfile,
 } from "@/server/queries";
 import {
   type MonthlySummary,
@@ -80,6 +83,8 @@ export default async function DashboardPage({
 
   // Gera as contas fixas do mês (se faltarem) ANTES de ler os totais abaixo.
   const snapshot = await getMonthSnapshot(month, today);
+  const profile = await getProfile();
+  const startedOn = profile?.onboarded_at ? todayISO(new Date(profile.onboarded_at)) : null;
 
   const db = await createClient();
   const [accounts, balances, categoryNames, cardSummaries, cardNames, budget, summaryRes, spendingRes, recentRes, expensesRes, billsRes, goalsRes, progressRes] =
@@ -386,7 +391,7 @@ export default async function DashboardPage({
                 {bills.map((b) => {
                   const state = dueState(b.date, today);
                   return (
-                    <li key={b.id} className="flex items-center gap-2.5">
+                    <li key={b.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-1.5">
                       <span
                         className={cn(
                           "grid size-9 shrink-0 place-items-center rounded-[11px]",
@@ -422,6 +427,16 @@ export default async function DashboardPage({
                         </small>
                       </span>
                       <span className="shrink-0 text-[0.75rem] font-extrabold tabular-nums"><Money>{formatBRL(Number(b.amount))}</Money></span>
+                      {/* conta fixa: marcar como paga aqui mesmo (fatura se paga na aba Cartões) */}
+                      {!b.href && (
+                        <PaidButton
+                          id={b.id}
+                          settled={false}
+                          income={false}
+                          askBeforeStart={startedOn !== null && b.date < startedOn}
+                          className="col-span-2 col-start-2 justify-self-end"
+                        />
+                      )}
                     </li>
                   );
                 })}

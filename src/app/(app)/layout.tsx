@@ -28,7 +28,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <SideDock />
           <main
             id="conteudo"
-            className="glass-stage min-w-0 rounded-[23px] px-[13px] pt-[15px] pb-[17px] md:rounded-[34px] md:px-[clamp(25px,3.2vw,49px)] md:pt-[clamp(19px,2.15vw,35px)] md:pb-24"
+            className="glass-stage min-w-0 rounded-[23px] px-4 pt-5 pb-6 md:rounded-[34px] md:px-[clamp(25px,3.2vw,49px)] md:pt-[clamp(19px,2.15vw,35px)] md:pb-24"
           >
             <Suspense fallback={null}>
               <SectionTabs />

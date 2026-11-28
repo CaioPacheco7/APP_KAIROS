@@ -35,11 +35,12 @@ export function AccountDialog({ account }: { account?: AccountValues }) {
       {editing ? (
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="sm"
           aria-label={`Editar ${account!.name}`}
+          className="text-muted-foreground"
           onClick={() => setOpen(true)}
         >
-          <PencilIcon />
+          <PencilIcon /> Editar
         </Button>
       ) : (
         <Button size="sm" onClick={() => setOpen(true)}>

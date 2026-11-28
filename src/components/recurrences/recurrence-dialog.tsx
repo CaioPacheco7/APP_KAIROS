@@ -182,10 +182,23 @@ function RecurrenceForm({
       </Field>
 
       {!recurrence && (
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="start_next_month" className="size-4 accent-[var(--primary)]" />
-          Começar só no mês que vem (já resolvi este mês)
-        </label>
+        <fieldset className="grid gap-2">
+          <legend className="mb-1 text-sm font-medium">Primeira cobrança</legend>
+          <label className="flex items-start gap-2.5 text-sm">
+            <input type="radio" name="start_next_month" value="" defaultChecked className="mt-0.5 size-4 accent-[var(--primary)]" />
+            <span>
+              Este mês
+              <span className="block text-xs text-muted-foreground">Aparece em “Contas do mês” para marcar quando pagar.</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2.5 text-sm">
+            <input type="radio" name="start_next_month" value="on" className="mt-0.5 size-4 accent-[var(--primary)]" />
+            <span>
+              Só no mês que vem
+              <span className="block text-xs text-muted-foreground">Este mês já está resolvido (ou ainda não começou).</span>
+            </span>
+          </label>
+        </fieldset>
       )}
 
       {formError && (

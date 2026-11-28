@@ -173,3 +173,47 @@ export function installmentLabel(total: number, n: number, format: (cents: numbe
   const parts = splitInstallments(total, n);
   return `${n}x de ${format(parts[parts.length - 1])}${parts[0] !== parts[1] ? ` (a 1ª ${format(parts[0])})` : ""}`;
 }
+
+/**
+ * A próxima fatura a vencer a partir de hoje: a que já fechou e ainda não
+ * venceu (se houver) ou a aberta. É onde entra o saldo de quem começa a usar
+ * o app com o cartão já em uso.
+ */
+export function nextDueInvoice(cycle: CardCycle, today: string): { month: string; closing: string; due: string } {
+  const open = invoiceFor(today, cycle);
+  const previous = shiftMonth(open, -1);
+  const prevDates = invoiceDates(previous, cycle);
+  if (prevDates.due >= today) return { month: previous, ...prevDates };
+  return { month: open, ...invoiceDates(open, cycle) };
+}
+
+/**
+ * Saldo de antes de começar (RN-41): o que já está na próxima fatura e, se
+ * houver, parcelas de compras antigas nas faturas seguintes (uma por mês).
+ */
+export function openingPlan(input: {
+  cycle: CardCycle;
+  today: string;
+  /** o que já tem na próxima fatura a vencer (centavos; 0 = nada) */
+  current: number;
+  /** parcela mensal de compras antigas (centavos; 0 = nada) */
+  perMonth: number;
+  /** quantas faturas DEPOIS da próxima ainda têm essa parcela */
+  months: number;
+}): Array<{ amount: number; invoiceMonth: string; date: string; number: number | null; total: number | null }> {
+  const next = nextDueInvoice(input.cycle, input.today);
+  const out: Array<{ amount: number; invoiceMonth: string; date: string; number: number | null; total: number | null }> = [];
+  if (input.current > 0) out.push({ amount: input.current, invoiceMonth: next.month, date: input.today, number: null, total: null });
+  if (input.perMonth > 0 && input.months > 0) {
+    for (let i = 1; i <= input.months; i++) {
+      out.push({
+        amount: input.perMonth,
+        invoiceMonth: shiftMonth(next.month, i),
+        date: addMonthsClamped(input.today, i),
+        number: input.months > 1 ? i : null,
+        total: input.months > 1 ? input.months : null,
+      });
+    }
+  }
+  return out;
+}

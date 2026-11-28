@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isISODate } from "@/lib/dates";
+import { daysForPreset, repeatLabel, type RepeatPreset } from "@/lib/reminders";
 import { createClient } from "@/lib/supabase/server";
 import { requireUserId } from "@/lib/supabase/user";
 import type { ActionState } from "./types";
@@ -46,11 +47,25 @@ export async function saveTaskAction(
       fieldErrors: fieldErrorsFrom(parsed.error),
     };
   }
-  const { kind, title, priority } = parsed.data;
+  const { title, priority } = parsed.data;
+  let { kind } = parsed.data;
   const due_date = emptyToNull(parsed.data.due_date);
   const time = emptyToNull(parsed.data.time);
 
-  if (kind === "reminder" && !due_date) {
+  // Repetir (RN-40): vira lembrete fixo, sem dia, com horário e dias da semana
+  const repeat = (formString(formData, "repeat") || "once") as RepeatPreset;
+  const days = daysForPreset(repeat, formData.getAll("weekdays").map((v) => Number(v)));
+  if (days) {
+    if (days.length === 0) {
+      return { status: "error", message: "Confira os campos.", fieldErrors: { weekdays: "Escolha pelo menos um dia" } };
+    }
+    if (!time) {
+      return { status: "error", message: "Confira os campos.", fieldErrors: { time: "Escolha o horário do lembrete" } };
+    }
+    kind = "reminder";
+  }
+
+  if (!days && kind === "reminder" && !due_date) {
     return {
       status: "error",
       message: "Confira os campos.",
@@ -58,14 +73,18 @@ export async function saveTaskAction(
     };
   }
 
-  const fields = {
-    kind,
-    title,
-    priority,
-    due_date,
-    // Brasil: UTC-3 fixo (sem horário de verão desde 2019)
-    remind_at: kind === "reminder" && due_date && time ? `${due_date}T${time}:00-03:00` : null,
-  };
+  const fields = days
+    ? { kind, title, priority: "normal", due_date: null, remind_at: null, repeat_weekdays: days, remind_time: time }
+    : {
+        kind,
+        title,
+        priority,
+        due_date,
+        // Brasil: UTC-3 fixo (sem horário de verão desde 2019)
+        remind_at: kind === "reminder" && due_date && time ? `${due_date}T${time}:00-03:00` : null,
+        repeat_weekdays: null,
+        remind_time: null,
+      };
 
   const db = await createClient();
   const id = formString(formData, "id");
@@ -86,7 +105,14 @@ export async function saveTaskAction(
   }
 
   refresh();
-  return { status: "success" };
+  return {
+    status: "success",
+    message: days
+      ? `Lembrete fixo criado: ${repeatLabel(days, time!)}`
+      : kind === "reminder"
+        ? "Lembrete criado"
+        : "Tarefa criada",
+  };
 }
 
 export async function toggleTaskAction(formData: FormData): Promise<void> {
